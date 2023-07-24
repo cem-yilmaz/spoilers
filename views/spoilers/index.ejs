@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spoilers List</title>
+</head>
+<body>
+  <h1>Spoilers</h1>
+  <a href="/spoilers/new">Add New Spoiler</a>
+  <ul>
+    <% spoilers.forEach(spoiler => { %>
+      <li>
+        <a href="/spoilers/<%= spoiler._id %>"><%= spoiler.title %></a>
+      </li>
+    <% }) %>
+  </ul>
+</body>
+</html>

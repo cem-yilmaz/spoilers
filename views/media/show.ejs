@@ -1,6 +1,7 @@
 <h1><%= media.title %></h1>
 <p>Type: <%= media.type %></p>
 
+<a href="/media">Back</a>
 <a href="/media/<%= media._id %>/edit">Edit</a>
 <form action="/media/<%= media._id %>?_method=DELETE" method="POST">
   <button type="submit">Delete</button>

@@ -41,6 +41,17 @@ router.post('/', async (req, res) => {
   res.redirect('/media');
 });
 
+router.delete('/:id', async (req, res) => {
+  try {
+    await Media.findByIdAndRemove(req.params.id);
+    res.redirect('/media');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+
 router.put('/:id', async (req, res) => {
   try {
     let mediaItem = await Media.findById(req.params.id);
