@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const expressLayouts = require('express-ejs-layouts');
+const methodOverride = require('method-override');
 const path = require('path');
 
 const mediaRoutes = require('./routes/media');
@@ -21,6 +22,9 @@ app.set('layout', 'layout');
 
 // Set up body-parser to parse form data
 app.use(bodyParser.urlencoded({ extended: false }));
+
+// Set up method-override to allow PUT and DELETE requests to be sent via POST
+app.use(methodOverride('_method'));
 
 // Set up a test route
 app.get('/', (req, res) => {

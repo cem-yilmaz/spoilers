@@ -11,10 +11,10 @@ router.get('/new', (req, res) => {
   res.render('media/new', { title: 'Add New Media' });
 });
 
-router.get('/edit/:id', async (req, res) => {
+router.get('/:id/edit', async (req, res) => {
   try {
     const mediaItem = await Media.findById(req.params.id);
-    res.render('media/edit', { media: mediaItem, title: 'Edit Media' });
+    res.render('media/edit', { media: mediaItem, title: `Edit ${mediaItem.title}` });
   } catch (err) {
     console.log(err);
     res.redirect('/media');
@@ -43,12 +43,11 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const updatedMedia = await Media.findByIdAndUpdate(
-      req.params.id, 
-      { title: req.body.title, type: req.body.type },
-      { new: true, runValidators: true }
-    );
-    res.redirect(`/media/${updatedMedia._id}`);
+    let mediaItem = await Media.findById(req.params.id);
+    mediaItem.title = req.body.title;
+    mediaItem.type = req.body.type;
+    await mediaItem.save();
+    res.redirect(`/media/${mediaItem.id}`);
   } catch (err) {
     console.log(err);
     res.redirect('/media');
