@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+</head>
+<body>
+  <h1><%= title %></h1>
+
+  <form action="/media/<%= media._id %>?_method=PUT" method="POST">
+    <div>
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" value="<%= media.title %>">
+    </div>
+
+    <div>
+      <label for="type">Type:</label>
+      <select id="type" name="type">
+        <option value="Video Game" <%= media.type == 'Video Game' ? 'selected' : '' %>>Video Game</option>
+        <option value="TV Show" <%= media.type == 'TV Show' ? 'selected' : '' %>>TV Show</option>
+        <option value="Film" <%= media.type == 'Film' ? 'selected' : '' %>>Film</option>
+        <option value="Book" <%= media.type == 'Book' ? 'selected' : '' %>>Book</option>
+        <option value="Sporting Event" <%= media.type == 'Sporting Event' ? 'selected' : '' %>>Sporting Event</option>
+        <option value="Other" <%= media.type == 'Other' ? 'selected' : '' %>>Other</option>
+      </select>
+    </div>
+
+    <button type="submit">Update Media</button>
+  </form>
+
+  <a href="/media/<%= media._id %>">Cancel</a>
+</body>
+</html>
