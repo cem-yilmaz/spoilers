@@ -1,0 +1,13 @@
+<h1>All Media</h1>
+
+<ul>
+  <% media.forEach((mediaItem) => { %>
+    <li>
+      <a href="/media/<%= mediaItem._id %>"><%= mediaItem.title %></a>
+      (<%= mediaItem.type %>)
+    </li>
+  <% }); %>
+</ul>
+
+
+<a href="/media/new">Add a new media</a>
