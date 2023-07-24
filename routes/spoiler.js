@@ -7,6 +7,11 @@ router.get('/', async (req, res) => {
     const spoilersList = await Spoiler.find({});
     res.render('spoilers/index', { spoilers: spoilersList, title: 'Spoilers List' });
 });
+
+// New Spoiler Form
+router.get('/new', (req, res) => {
+    res.render('spoilers/new', { title: 'Add New Spoiler' });
+});
   
 // Get a single spoiler
 router.get('/:id', async (req, res) => {

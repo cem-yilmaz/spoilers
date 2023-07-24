@@ -5,6 +5,7 @@ const methodOverride = require('method-override');
 const path = require('path');
 
 const mediaRoutes = require('./routes/media');
+const spoilerRoutes = require('./routes/spoiler');
 
 const app = express();
 
@@ -33,6 +34,9 @@ app.get('/', (req, res) => {
 
 // Set up our media routes
 app.use('/media', mediaRoutes);
+
+// Set up our spoiler routes
+app.use('/spoilers', spoilerRoutes);
 
 // Start the server
 app.listen(3000, () => {
