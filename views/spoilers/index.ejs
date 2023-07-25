@@ -9,7 +9,7 @@
   <ul>
     <% spoilers.forEach(spoiler => { %>
       <li>
-        <a href="/spoilers/<%= spoiler._id %>"><%= spoiler.title %></a>
+        <a href="/spoilers/<%= spoiler._id %>"><%= spoiler.media.title %> - <%= spoiler.title %></a>
       </li>
     <% }) %>
   </ul>

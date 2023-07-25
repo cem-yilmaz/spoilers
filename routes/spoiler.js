@@ -1,17 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const Spoiler = require('../models/spoiler');
+const Media = require('../models/media');
 
 // Get all spoilers
 router.get('/', async (req, res) => {
-    const spoilersList = await Spoiler.find({});
-    res.render('spoilers/index', { spoilers: spoilersList, title: 'Spoilers List' });
+  try {
+      const spoilersList = await Spoiler.find({}).populate('media');
+      res.render('spoilers/index', { spoilers: spoilersList, title: 'Spoilers List' });
+  } catch(err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
 });
 
-// New Spoiler Form
-router.get('/new', (req, res) => {
-    res.render('spoilers/new', { title: 'Add New Spoiler' });
+
+// New spoiler form
+router.get('/new', async (req, res) => {
+  try {
+      const mediaList = await Media.find({});
+      res.render('spoilers/new', { mediaList: mediaList, title: 'Create Spoiler' });
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
 });
+
   
 // Get a single spoiler
 router.get('/:id', async (req, res) => {
@@ -26,15 +40,21 @@ router.get('/:id', async (req, res) => {
 
 // Create a new spoiler
 router.post('/', async (req, res) => {
-    const newSpoiler = new Spoiler({
-        title: req.body.title,
-        intensity: req.body.intensity,
-        reference: req.body.reference,
-        media: req.body.mediaId
-    });
-    await newSpoiler.save();
-    res.redirect('/spoilers');
+  const newSpoiler = new Spoiler({
+      title: req.body.title,
+      intensity: req.body.intensity,
+      reference: req.body.reference,
+      media: req.body.mediaId
+  });
+  try {
+      await newSpoiler.save();
+      res.redirect('/spoilers');
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers/new');
+  }
 });
+
   
 
 // Update a spoiler

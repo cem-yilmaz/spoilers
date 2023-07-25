@@ -8,7 +8,7 @@ const SpoilerSchema = new mongoose.Schema({
   intensity: {
     type: String,
     required: true,
-    enum: ['No Spoilers', 'Mild Spoilers', 'Major Spoilers']
+    enum: ['No Spoilers', 'Story Beats/Mild Spoilers', 'Major Spoilers']
   },
   reference: {
     type: String,
