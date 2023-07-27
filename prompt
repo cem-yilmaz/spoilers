@@ -980,3 +980,69 @@ router.put('/:id', async (req, res) => {
 module.exports = router;
 
 Please provide the updated code for each, pointing out what you've changed.
+=================================================================================================
+Wonderful. I can now populate my db with spoilers and URL's and theyre all collated here. One more request:
+
+When showing the tree, currently it may look like this:
+A
+├───B
+│   ├───C
+│   └───D
+└───E
+    ├───F
+    └───G
+
+This "capping" of branches is nice, but only actually works if there's more than 2 children. In cases with only one or no children, it looks like this:
+
+The Simpsons (TV Show) [Edit] [Delete]
+
+└───
+
+Of Mice and Men (Book) [Edit] [Delete]
+
+    ├───George shoots Lenny(Major Spoilers)
+
+        ├───https://en.wikipedia.org/wiki/Of_Mice_and_Men#Plot
+
+    └───
+
+└───
+
+Here we can see 3 issues:
+1. The Simpsons has no spoilers, yet still renders the "└───" branch
+2. Of Mice and Men has one spoiler, yet still renders the "└───" branch to an empty space
+3. The spoiler "George shoots Lenny" has one URL, yet incorrectly renders the "├───" branch instead of "└───"
+
+I'll provide the code for views/index.ejs, and I'd like you to provide the code to fix these issues. Code:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spoiler Wiki</title>
+</head>
+<body>
+  <h1>Spoiler Wiki</h1>
+  Add:
+  <a href="/media/new">[Media]</a>
+  <a href="/spoilers/new">[Spoiler]</a>
+  <a href="/urls/new">[URL]</a>
+  <% mediaList.forEach(media => { %>
+    <p>
+      <a href="/media/<%= media._id %>"><%= media.title %></a> (<%= media.type %>)
+      <a href="/media/<%= media._id %>/edit">[Edit]</a>
+      <a href="/media/<%= media._id %>/delete">[Delete]</a>
+    </p>
+    <% media.spoilers.forEach(spoiler => { %>
+      <p style="margin-left: 20px;">
+        ├───<a href="/spoilers/<%= spoiler._id %>"><%= spoiler.title %></a>(<%= spoiler.intensity %>)
+      </p>
+      <% spoiler.urls.forEach(url => { %>
+        <p style="margin-left: 40px;">
+          ├───<a href="/urls/<%= url._id %>"><%= url.url %></a>
+        </p>
+      <% }) %>
+      <p style="margin-left: 20px;">└───</p>
+    <% }) %>
+    <p>└───</p>
+  <% }) %>
+</body>
+</html>
