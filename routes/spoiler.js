@@ -14,6 +14,11 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get spoilers by media ID
+router.get('/media/:mediaId', async (req, res) => {
+  const spoilers = await Spoiler.find({ media: req.params.mediaId });
+  res.json(spoilers);
+});
 
 // New spoiler form
 router.get('/new', async (req, res) => {

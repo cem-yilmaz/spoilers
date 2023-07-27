@@ -2,33 +2,48 @@
 <html>
 <head>
     <title>New URL</title>
+    <script>
+        window.onload = function() {
+            var mediaSelect = document.getElementById('media');
+            var spoilerSelect = document.getElementById('spoiler');
+            mediaSelect.onchange = function() {
+                // Clear current options in spoilerSelect
+                spoilerSelect.innerHTML = '';
+                fetch('/spoilers/media/' + this.value)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(spoiler => {
+                        var opt = document.createElement('option');
+                        opt.value = spoiler._id;
+                        opt.innerHTML = spoiler.title;
+                        spoilerSelect.appendChild(opt);
+                    });
+                });
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>New URL</h1>
     <form action="/urls" method="post">
         <label for="url">URL</label>
         <input type="text" id="url" name="url" required>
-      
+
         <label for="media">Media</label>
         <select id="media" name="media" required>
           <% media.forEach(medium => { %>
             <option value="<%= medium._id %>"><%= medium.title %></option>
           <% }); %>
         </select>
-      
+
         <label for="spoiler">Spoiler</label>
         <select id="spoiler" name="spoiler" required>
-          <option value="">Select a spoiler</option>
-          <% spoilers.forEach(spoiler => { %>
-            <option value="<%= spoiler._id %>"><%= spoiler.title %></option>
-          <% }); %>
         </select>
-      
+
         <label for="description">Description (optional)</label>
         <textarea id="description" name="description"></textarea>
-      
+
         <button type="submit">Create URL</button>
     </form>
 </body>
 </html>
-  
