@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit URL</title>
+</head>
+<body>
+    <form action="/urls/<%= url._id %>?_method=PUT" method="post">
+        <label for="url">URL</label>
+        <input type="text" id="url" name="url" value="<%= url.url %>" required>
+      
+        <label for="media">Media</label>
+        <select id="media" name="media" required>
+          <% media.forEach(medium => { %>
+            <option value="<%= medium._id %>" <% if(medium._id.toString() === url.media._id.toString()) { %>selected<% } %>><%= medium.title %></option>
+          <% }); %>
+        </select>
+      
+        <label for="spoiler">Spoiler</label>
+        <select id="spoiler" name="spoiler" required>
+          <option value="">Select a spoiler</option>
+          <% spoilers.forEach(spoiler => { %>
+            <option value="<%= spoiler._id %>" <% if(spoiler._id.toString() === url.spoiler._id.toString()) { %>selected<% } %>><%= spoiler.title %></option>
+          <% }); %>
+        </select>
+      
+        <label for="description">Description (optional)</label>
+        <textarea id="description" name="description"><%= url.description %></textarea>
+      
+        <button type="submit">Update URL</button>
+    </form>      
+</body>
+</html>

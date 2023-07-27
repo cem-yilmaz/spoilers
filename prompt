@@ -33,3 +33,248 @@ URLs will also have an optional description field on "how" the media spoils it, 
 Deleting a URL is nothing fancy, just a delete button next to each URL.
 
 Please provide an overview of how you'll implement this URL system, but this time provide all the files and their code for me to simply copy and paste into the project (as opposed to going bit by bit).
+================================================
+To help you debug it, here's every changed/new file I've made since finalising basic spoiler CRUD:
+app.js:
+const express = require('express');
+const bodyParser = require('body-parser');
+const expressLayouts = require('express-ejs-layouts');
+const methodOverride = require('method-override');
+const path = require('path');
+
+const mediaRoutes = require('./routes/media');
+const spoilerRoutes = require('./routes/spoiler');
+const URLRoutes = require('./routes/urls');
+
+const app = express();
+
+// Set up EJS as our templating engine
+app.set('view engine', 'ejs');
+
+// Set views directory
+app.set('views', path.join(__dirname, 'views'));
+
+// Set up express-ejs-layouts
+app.use(expressLayouts);
+
+// Set the layout file
+app.set('layout', 'layout');
+
+// Set up body-parser to parse form data
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Set up method-override to allow PUT and DELETE requests to be sent via POST
+app.use(methodOverride('_method'));
+
+// Set up a test route
+app.get('/', (req, res) => {
+  res.send('Hello, world!');
+});
+
+// Set up our media routes
+app.use('/media', mediaRoutes);
+
+// Set up our spoiler routes
+app.use('/spoilers', spoilerRoutes);
+
+// Set up our URL routes
+app.use('/urls', URLRoutes);
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
+
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+  keepAlive: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('Could not connect to MongoDB:', err));
+
+/* 
+const db = mongoose.connection;
+db.on('error', (error) => console.error(error));
+db.once('open', () => console.log('Connected to database'));
+ */
+
+models/URL.js:
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const URLSchema = new Schema({
+  url: { type: String, required: true },
+  media: { type: Schema.Types.ObjectId, ref: 'Media', required: true },
+  spoiler: { type: Schema.Types.ObjectId, ref: 'Spoiler', required: true },
+  description: { type: String }
+});
+
+module.exports = mongoose.model('URL', URLSchema);
+
+routes/urls.js:
+const express = require('express');
+const router = express.Router();
+const URL = require('../models/URL');
+const Media = require('../models/Media');
+const Spoiler = require('../models/Spoiler');
+
+// New URL form
+router.get('/new', async (req, res) => {
+  const media = await Media.find({});
+  const spoilers = await Spoiler.find({});
+  res.render('urls/new', { media, spoilers });
+});
+
+// Create URL
+router.post('/', async (req, res) => {
+  const url = new URL(req.body);
+  await url.save();
+  res.redirect('/urls');
+});
+
+// Edit URL form
+router.get('/:id/edit', async (req, res) => {
+  const url = await URL.findById(req.params.id);
+  const media = await Media.find({});
+  const spoilers = await Spoiler.find({});
+  res.render('urls/edit', { url, media, spoilers });
+});
+
+// Update URL
+router.put('/:id', async (req, res) => {
+  await URL.findByIdAndUpdate(req.params.id, req.body);
+  res.redirect('/urls');
+});
+
+// Delete URL
+router.delete('/:id', async (req, res) => {
+  await URL.findByIdAndDelete(req.params.id);
+  res.redirect('/urls');
+});
+
+// List URLs
+router.get('/', async (req, res) => {
+  const urls = await URL.find({}).populate('media').populate('spoiler');
+  res.render('urls/index', { urls });
+});
+
+// Show URL
+router.get('/:id', async (req, res) => {
+  const url = await URL.findById(req.params.id).populate('media').populate('spoiler');
+  res.render('urls/show', { url });
+});
+
+module.exports = router;
+
+views/urls/new.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New URL</title>
+</head>
+<body>
+    <h1>New URL</h1>
+    <form action="/urls" method="post">
+        <label for="url">URL</label>
+        <input type="text" id="url" name="url" required>
+      
+        <label for="media">Media</label>
+        <select id="media" name="media" required>
+          <% media.forEach(medium => { %>
+            <option value="<%= medium._id %>"><%= medium.title %></option>
+          <% }); %>
+        </select>
+      
+        <label for="spoiler">Spoiler</label>
+        <select id="spoiler" name="spoiler" required>
+          <% spoilers.forEach(spoiler => { %>
+            <option value="<%= spoiler._id %>"><%= spoiler.description %></option>
+          <% }); %>
+        </select>
+      
+        <label for="description">Description (optional)</label>
+        <textarea id="description" name="description"></textarea>
+      
+        <button type="submit">Create URL</button>
+    </form>
+</body>
+</html>
+  
+views/urls/edit.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit URL</title>
+</head>
+<body>
+    <form action="/urls/<%= url._id %>?_method=PUT" method="post">
+        <label for="url">URL</label>
+        <input type="text" id="url" name="url" value="<%= url.url %>" required>
+      
+        <label for="media">Media</label>
+        <select id="media" name="media" required>
+          <% media.forEach(medium => { %>
+            <option value="<%= medium._id %>" <% if(medium._id.toString() === url.media._id.toString()) { %>selected<% } %>><%= medium.title %></option>
+          <% }); %>
+        </select>
+      
+        <label for="spoiler">Spoiler</label>
+        <select id="spoiler" name="spoiler" required>
+          <% spoilers.forEach(spoiler => { %>
+            <option value="<%= spoiler._id %>" <% if(spoiler._id.toString() === url.spoiler._id.toString()) { %>selected<% } %>><%= spoiler.description %></option>
+          <% }); %>
+        </select>
+      
+        <label for="description">Description (optional)</label>
+        <textarea id="description" name="description"><%= url.description %></textarea>
+      
+        <button type="submit">Update URL</button>
+    </form>      
+</body>
+</html>
+
+views/urls/show.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URLs</title>
+</head>
+<body>
+    <h1><%= url.url %></h1>
+
+    <h2>Media: <%= url.media.title %></h2>
+
+    <h2>Spoiler: <%= url.spoiler.description %></h2>
+
+    <h2>Description: <%= url.description || 'N/A' %></h2>
+
+    <a href="/urls/<%= url._id %>/edit">Edit</a>
+    <form action="/urls/<%= url._id %>?_method=DELETE" method="post">
+        <button type="submit">Delete</button>
+    </form>
+</body>
+</html>
+
+views/urls/index.ejs:
+<h1>All URLs</h1>
+
+<% urls.forEach(url => { %>
+  <h2><a href="/urls/<%= url._id %>"><%= url.url %></a></h2>
+
+  <p>Media: <%= url.media.title %></p>
+
+  <p>Spoiler: <%= url.spoiler.description %></p>
+
+  <p>Description: <%= url.description || 'N/A' %></p>
+<% }); %>
+
+<a href="/urls/new">Add new URL</a>
+
+
+Based on this information, can you help me diagnose the problem?
+=================================================================================================

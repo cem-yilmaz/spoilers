@@ -6,6 +6,7 @@ const path = require('path');
 
 const mediaRoutes = require('./routes/media');
 const spoilerRoutes = require('./routes/spoiler');
+const URLRoutes = require('./routes/urls');
 
 const app = express();
 
@@ -27,6 +28,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // Set up method-override to allow PUT and DELETE requests to be sent via POST
 app.use(methodOverride('_method'));
 
+// Set up backup title incase we forget to pass once
+app.locals.title = 'NO TITLE SET';
+
 // Set up a test route
 app.get('/', (req, res) => {
   res.send('Hello, world!');
@@ -37,6 +41,9 @@ app.use('/media', mediaRoutes);
 
 // Set up our spoiler routes
 app.use('/spoilers', spoilerRoutes);
+
+// Set up our URL routes
+app.use('/urls', URLRoutes);
 
 // Start the server
 app.listen(3000, () => {
