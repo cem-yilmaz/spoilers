@@ -8,6 +8,8 @@ const mediaRoutes = require('./routes/media');
 const spoilerRoutes = require('./routes/spoiler');
 const URLRoutes = require('./routes/urls');
 
+const Media = require('./models/media');
+
 const app = express();
 
 // Set up EJS as our templating engine
@@ -31,9 +33,10 @@ app.use(methodOverride('_method'));
 // Set up backup title incase we forget to pass once
 app.locals.title = 'NO TITLE SET';
 
-// Set up a test route
-app.get('/', (req, res) => {
-  res.send('Hello, world!');
+// Set up our home route
+app.get('/', async (req, res) => {
+  const mediaList = await Media.find().populate('type').exec();
+  res.render('index', { title: 'Spoiler Wiki', mediaList });
 });
 
 // Set up our media routes

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spoiler Wiki</title>
+</head>
+<body>
+  <h1>Spoiler Wiki</h1>
+  <a href="/media/new">[Media]</a>
+  <a href="/spoilers/new">[Spoiler]</a>
+  <a href="/urls/new">[URL]</a>
+  <% mediaList.forEach(media => { %>
+    <p>
+      <a href="/media/<%= media._id %>"><%= media.title %></a> (<%= media.type %>)
+      <a href="/media/<%= media._id %>/edit">[Edit]</a>
+      <a href="/media/<%= media._id %>/delete">[Delete]</a>
+    </p>
+    <% media.spoilers.forEach(spoiler => { %>
+      <p style="margin-left: 20px;">
+        ├───<a href="/spoilers/<%= spoiler._id %>"><%= spoiler.title %></a>(<%= spoiler.intensity %>)
+      </p>
+      <% spoiler.urls.forEach(url => { %>
+        <p style="margin-left: 40px;">
+          ├───<a href="/urls/<%= url._id %>"><%= url.url %></a>
+        </p>
+      <% }) %>
+      <p style="margin-left: 20px;">└───</p>
+    <% }) %>
+    <p>└───</p>
+  <% }) %>
+</body>
+</html>

@@ -64,6 +64,10 @@ router.post('/', async (req, res) => {
   });
   try {
       await newSpoiler.save();
+      await Media.updateOne(
+        { _id: req.body.mediaId },
+        { $push: { spoilers: newSpoiler._id } }
+      )
       res.redirect('/spoilers');
   } catch (err) {
       console.log(err);

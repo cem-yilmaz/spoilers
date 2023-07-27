@@ -278,3 +278,462 @@ views/urls/index.ejs:
 
 Based on this information, can you help me diagnose the problem?
 =================================================================================================
+Brilliant stuff! Spoiler CRUD functionality is now working.
+I have got an idea for how I want the base page to look - the base page being the one accessed on localhost:3000, just so I can get this finished before starting the wiki fr.
+I want it to look like this example:
+
+Spoiler Wiki
+ADD: [Media] [Spoiler] [URL]
+
+List of titles: ├─└
+Media1 (Type) [Edit] [Delete]
+├───Spoiler1(Intensity)
+│   ├───URL1
+│   └───URL2
+├───Spoiler2(Intensity)
+│   ├───URL3
+└───Spoiler3(Intensity)
+    └───URL4
+Media2 (Type) [Edit] [Delete]
+├───Spoiler4(Intensity)
+│   ├───URL5
+│   └───URL6
+├───Spoiler5(Intensity)
+│   ├───URL7
+
+etc etc
+Every Media, Spoiler, and URL will be a hyperlink to the show page for that item. The [buttons] are marked with brackets and are clickable, and the ├─└ are to show the tree structure.
+
+How would I achieve this? Please provide each step in the process, and the code for each step.
+=================================================================================================
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spoiler Wiki</title>
+</head>
+<body>
+  <h1>Spoiler Wiki</h1>
+  <a href="/media/new">[Media]</a>
+  <a href="/spoilers/new">[Spoiler]</a>
+  <a href="/urls/new">[URL]</a>
+  <% mediaList.forEach(media => { %>
+    <p>
+      <a href="/media/<%= media._id %>"><%= media.title %></a> (<%= media.type %>)
+      <a href="/media/<%= media._id %>/edit">[Edit]</a>
+      <a href="/media/<%= media._id %>/delete">[Delete]</a>
+    </p>
+    <% media.spoilers.forEach(spoiler => { %>
+      <p style="margin-left: 20px;">
+        ├───<a href="/spoilers/<%= spoiler._id %>"><%= spoiler.title %></a>(<%= spoiler.intensity %>)
+      </p>
+      <% spoiler.urls.forEach(url => { %>
+        <p style="margin-left: 40px;">
+          ├───<a href="/urls/<%= url._id %>"><%= url.url %></a>
+        </p>
+      <% }) %>
+      <p style="margin-left: 20px;">└───</p>
+    <% }) %>
+    <p>└───</p>
+  <% }) %>
+</body>
+</html>
+=================================================================================================
+Right, lets get to the bottom of this. I've currently got the following error with my configuration:
+(node:24176) UnhandledPromiseRejectionWarning: ReferenceError: Media is not defined
+    at D:\School\Misc\spoilers\app.js:36:21
+    at Layer.handle [as handle_request] (D:\School\Misc\spoilers\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\School\Misc\spoilers\node_modules\express\lib\router\route.js:144:13)
+    at Route.dispatch (D:\School\Misc\spoilers\node_modules\express\lib\router\route.js:114:3)
+    at Layer.handle [as handle_request] (D:\School\Misc\spoilers\node_modules\express\lib\router\layer.js:95:5)
+    at D:\School\Misc\spoilers\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (D:\School\Misc\spoilers\node_modules\express\lib\router\index.js:346:12)       
+    at next (D:\School\Misc\spoilers\node_modules\express\lib\router\index.js:280:10)
+    at methodOverride (D:\School\Misc\spoilers\node_modules\method-override\index.js:65:14)
+    at Layer.handle [as handle_request] (D:\School\Misc\spoilers\node_modules\express\lib\router\layer.js:95:5)
+(node:24176) UnhandledPromiseRejectionWarning: Unhandled promise rejection. This error originated either by throwing inside of an async function without a catch block, or by rejecting a promise which was not handled with .catch(). To terminate the node process on unhandled promise rejection, use the CLI flag `--unhandled-rejections=strict` (see https://nodejs.org/api/cli.html#cli_unhandled_rejections_mode). (rejection id: 1)
+(node:24176) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+
+Here's the code for the files I believe to be relevant to this error:
+app.js:
+const express = require('express');
+const bodyParser = require('body-parser');
+const expressLayouts = require('express-ejs-layouts');
+const methodOverride = require('method-override');
+const path = require('path');
+
+const mediaRoutes = require('./routes/media');
+const spoilerRoutes = require('./routes/spoiler');
+const URLRoutes = require('./routes/urls');
+
+const app = express();
+
+// Set up EJS as our templating engine
+app.set('view engine', 'ejs');
+
+// Set views directory
+app.set('views', path.join(__dirname, 'views'));
+
+// Set up express-ejs-layouts
+app.use(expressLayouts);
+
+// Set the layout file
+app.set('layout', 'layout');
+
+// Set up body-parser to parse form data
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Set up method-override to allow PUT and DELETE requests to be sent via POST
+app.use(methodOverride('_method'));
+
+// Set up backup title incase we forget to pass once
+app.locals.title = 'NO TITLE SET';
+
+// Set up our home route
+app.get('/', async (req, res) => {
+  const mediaList = await Media.find().populate('type').exec();
+  res.render('index', { title: 'Spoiler Wiki', mediaList });
+});
+
+// Set up our media routes
+app.use('/media', mediaRoutes);
+
+// Set up our spoiler routes
+app.use('/spoilers', spoilerRoutes);
+
+// Set up our URL routes
+app.use('/urls', URLRoutes);
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
+
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+  keepAlive: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('Could not connect to MongoDB:', err));
+
+/* 
+const db = mongoose.connection;
+db.on('error', (error) => console.error(error));
+db.once('open', () => console.log('Connected to database'));
+ */
+
+
+views/index.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spoiler Wiki</title>
+</head>
+<body>
+  <h1>Spoiler Wiki</h1>
+  <a href="/media/new">[Media]</a>
+  <a href="/spoilers/new">[Spoiler]</a>
+  <a href="/urls/new">[URL]</a>
+  <% mediaList.forEach(media => { %>
+    <p>
+      <a href="/media/<%= media._id %>"><%= media.title %></a> (<%= media.type %>)
+      <a href="/media/<%= media._id %>/edit">[Edit]</a>
+      <a href="/media/<%= media._id %>/delete">[Delete]</a>
+    </p>
+    <% media.spoilers.forEach(spoiler => { %>
+      <p style="margin-left: 20px;">
+        ├───<a href="/spoilers/<%= spoiler._id %>"><%= spoiler.title %></a>(<%= spoiler.intensity %>)
+      </p>
+      <% spoiler.urls.forEach(url => { %>
+        <p style="margin-left: 40px;">
+          ├───<a href="/urls/<%= url._id %>"><%= url.url %></a>
+        </p>
+      <% }) %>
+      <p style="margin-left: 20px;">└───</p>
+    <% }) %>
+    <p>└───</p>
+  <% }) %>
+</body>
+</html>
+
+
+models/media.js:
+const mongoose = require('mongoose');
+
+const mediaSchema = new mongoose.Schema({
+  title: String,
+  type: { type: String, required: true, enum: ['Video Game', 'TV Show', 'Film', 'Book', 'Sporting Event', 'Other'] },
+  spoilers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Spoiler' }]
+});
+
+module.exports = mongoose.model('Media', mediaSchema);
+
+
+models/spoiler.js:
+const mongoose = require('mongoose');
+
+const SpoilerSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  intensity: {
+    type: String,
+    required: true,
+    enum: ['No Spoilers', 'Story Beats/Mild Spoilers', 'Major Spoilers']
+  },
+  reference: {
+    type: String,
+    required: true
+  },
+  media: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Media'
+  }
+});
+
+module.exports = mongoose.model('Spoiler', SpoilerSchema);
+
+
+routes/media.js:
+const express = require('express');
+const router = express.Router();
+const Media = require('../models/media');
+
+router.get('/', async (req, res) => {
+  const mediaList = await Media.find({});
+  res.render('media/index', { media: mediaList, title: 'Media List' });
+});
+
+router.get('/new', (req, res) => {
+  res.render('media/new', { title: 'Add New Media' });
+});
+
+router.get('/:id/edit', async (req, res) => {
+  try {
+    const mediaItem = await Media.findById(req.params.id);
+    res.render('media/edit', { media: mediaItem, title: `Edit ${mediaItem.title}` });
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const mediaItem = await Media.findById(req.params.id);
+    res.render('media/show', { media: mediaItem, title: mediaItem.title });
+    console.log("Success");
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+router.post('/', async (req, res) => {
+  const newMedia = new Media({
+    title: req.body.title,
+    type: req.body.type,
+  });
+  await newMedia.save();
+  res.redirect('/media');
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await Media.findByIdAndRemove(req.params.id);
+    res.redirect('/media');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+
+router.put('/:id', async (req, res) => {
+  try {
+    let mediaItem = await Media.findById(req.params.id);
+    mediaItem.title = req.body.title;
+    mediaItem.type = req.body.type;
+    await mediaItem.save();
+    res.redirect(`/media/${mediaItem.id}`);
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+module.exports = router;
+
+
+routes/spoiler.js:
+const express = require('express');
+const router = express.Router();
+const Spoiler = require('../models/spoiler');
+const Media = require('../models/media');
+
+// Get all spoilers
+router.get('/', async (req, res) => {
+  try {
+      const spoilersList = await Spoiler.find({}).populate('media');
+      res.render('spoilers/index', { spoilers: spoilersList, title: 'Spoilers List' });
+  } catch(err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+
+// Get spoilers by media ID
+router.get('/media/:mediaId', async (req, res) => {
+  const spoilers = await Spoiler.find({ media: req.params.mediaId });
+  res.json(spoilers);
+});
+
+// New spoiler form
+router.get('/new', async (req, res) => {
+  try {
+      const mediaList = await Media.find({});
+      res.render('spoilers/new', { mediaList: mediaList, title: 'Create Spoiler' });
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+
+// Get the spoiler edit form
+router.get('/:id/edit', async (req, res) => {
+  try {
+      const spoiler = await Spoiler.findById(req.params.id).populate('media');
+      const mediaList = await Media.find({});
+      res.render('spoilers/edit', { spoiler, mediaList, title: 'Edit Spoiler' });
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+  
+// Get a single spoiler
+router.get('/:id', async (req, res) => {
+    try {
+        const spoiler = await Spoiler.findById(req.params.id);
+        res.render('spoilers/show', { spoiler, title: spoiler.title });
+    } catch (err) {
+        console.log(err);
+        res.redirect('/spoilers');
+    }
+});
+
+// Create a new spoiler
+router.post('/', async (req, res) => {
+  const newSpoiler = new Spoiler({
+      title: req.body.title,
+      intensity: req.body.intensity,
+      reference: req.body.reference,
+      media: req.body.mediaId
+  });
+  try {
+      await newSpoiler.save();
+      await Media.updateOne(
+        { _id: req.body.mediaId },
+        { $push: { spoilers: newSpoiler._id } }
+      )
+      res.redirect('/spoilers');
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers/new');
+  }
+});
+
+// Update a spoiler
+router.put('/:id', async (req, res) => {
+    try {
+      let spoiler = await Spoiler.findById(req.params.id);
+      spoiler.title = req.body.title;
+      spoiler.intensity = req.body.intensity;
+      spoiler.reference = req.body.reference;
+      spoiler.media = req.body.mediaId;
+      await spoiler.save();
+      res.redirect(`/spoilers/${spoiler.id}`);
+    } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+    }
+});
+  
+// Delete a spoiler
+router.delete('/:id', async (req, res) => {
+    try {
+      await Spoiler.findByIdAndRemove(req.params.id);
+      res.redirect('/spoilers');
+    } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+    }
+  });
+  
+module.exports = router;
+
+
+routes/urls.js:
+const express = require('express');
+const mongoose = require('mongoose');
+
+const router = express.Router();
+const URL = require('../models/URL');
+const Media = mongoose.model('Media');
+const Spoiler = mongoose.model('Spoiler');
+
+// New URL form
+router.get('/new', async (req, res) => {
+  const media = await Media.find({});
+  const spoilers = await Spoiler.find({});
+  res.render('urls/new', { media, spoilers });
+});
+
+// Create URL
+router.post('/', async (req, res) => {
+  const url = new URL(req.body);
+  await url.save();
+  res.redirect('/urls');
+});
+
+// Edit URL form
+router.get('/:id/edit', async (req, res) => {
+  const url = await URL.findById(req.params.id);
+  const media = await Media.find({});
+  const spoilers = await Spoiler.find({});
+  res.render('urls/edit', { url, media, spoilers });
+});
+
+// Update URL
+router.put('/:id', async (req, res) => {
+  await URL.findByIdAndUpdate(req.params.id, req.body);
+  res.redirect('/urls');
+});
+
+// Delete URL
+router.delete('/:id', async (req, res) => {
+  await URL.findByIdAndDelete(req.params.id);
+  res.redirect('/urls');
+});
+
+// List URLs
+router.get('/', async (req, res) => {
+  const urls = await URL.find({}).populate('media').populate('spoiler');
+  res.render('urls/index', { urls, title: 'URLs' });
+});
+
+// Show URL
+router.get('/:id', async (req, res) => {
+  const url = await URL.findById(req.params.id).populate('media').populate('spoiler');
+  res.render('urls/show', { url });
+});
+
+module.exports = router;
+
+
+Please provide the fix for the error, and then provide all the changes necessary to get localhost:300 looking like the example.
