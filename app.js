@@ -35,7 +35,13 @@ app.locals.title = 'NO TITLE SET';
 
 // Set up our home route
 app.get('/', async (req, res) => {
-  const mediaList = await Media.find().populate('type').exec();
+  const mediaList = await Media.find().populate({ 
+    path: 'spoilers',
+    populate: {
+      path: 'urls',
+      model: 'URL'
+    } 
+  }).exec();
   res.render('index', { title: 'Spoiler Wiki', mediaList });
 });
 

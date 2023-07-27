@@ -17,8 +17,17 @@ router.get('/new', async (req, res) => {
 router.post('/', async (req, res) => {
   const url = new URL(req.body);
   await url.save();
+  await Media.updateOne(
+    { _id: url.media },
+    { $push: { urls: url._id } }
+  );
+  await Spoiler.updateOne(
+    { _id: url.spoiler },
+    { $push: { urls: url._id } }
+  );
   res.redirect('/urls');
 });
+
 
 // Edit URL form
 router.get('/:id/edit', async (req, res) => {

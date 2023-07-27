@@ -36,10 +36,13 @@ router.post('/', async (req, res) => {
   const newMedia = new Media({
     title: req.body.title,
     type: req.body.type,
+    urls: [],
+    spoilers: []
   });
   await newMedia.save();
   res.redirect('/media');
 });
+
 
 router.delete('/:id', async (req, res) => {
   try {

@@ -737,3 +737,246 @@ module.exports = router;
 
 
 Please provide the fix for the error, and then provide all the changes necessary to get localhost:300 looking like the example.
+=================================================================================================
+Could you provide the full code for routes/urls.js, routes/spoiler.js, and routes/media.js? I'm not sure where to put this backreferencing for each bit.
+
+As a refresher, here's the code for each file:-
+
+routes/urls.js:
+const express = require('express');
+const mongoose = require('mongoose');
+
+const router = express.Router();
+const URL = require('../models/URL');
+const Media = mongoose.model('Media');
+const Spoiler = mongoose.model('Spoiler');
+
+// New URL form
+router.get('/new', async (req, res) => {
+  const media = await Media.find({});
+  const spoilers = await Spoiler.find({});
+  res.render('urls/new', { media, spoilers });
+});
+
+// Create URL
+router.post('/', async (req, res) => {
+  const url = new URL(req.body);
+  await url.save();
+  res.redirect('/urls');
+});
+
+// Edit URL form
+router.get('/:id/edit', async (req, res) => {
+  const url = await URL.findById(req.params.id);
+  const media = await Media.find({});
+  const spoilers = await Spoiler.find({});
+  res.render('urls/edit', { url, media, spoilers });
+});
+
+// Update URL
+router.put('/:id', async (req, res) => {
+  await URL.findByIdAndUpdate(req.params.id, req.body);
+  res.redirect('/urls');
+});
+
+// Delete URL
+router.delete('/:id', async (req, res) => {
+  await URL.findByIdAndDelete(req.params.id);
+  res.redirect('/urls');
+});
+
+// List URLs
+router.get('/', async (req, res) => {
+  const urls = await URL.find({}).populate('media').populate('spoiler');
+  res.render('urls/index', { urls, title: 'URLs' });
+});
+
+// Show URL
+router.get('/:id', async (req, res) => {
+  const url = await URL.findById(req.params.id).populate('media').populate('spoiler');
+  res.render('urls/show', { url });
+});
+
+module.exports = router;
+
+
+
+routes/spoiler.js:
+const express = require('express');
+const router = express.Router();
+const Spoiler = require('../models/spoiler');
+const Media = require('../models/media');
+
+// Get all spoilers
+router.get('/', async (req, res) => {
+  try {
+      const spoilersList = await Spoiler.find({}).populate('media');
+      res.render('spoilers/index', { spoilers: spoilersList, title: 'Spoilers List' });
+  } catch(err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+
+// Get spoilers by media ID
+router.get('/media/:mediaId', async (req, res) => {
+  const spoilers = await Spoiler.find({ media: req.params.mediaId });
+  res.json(spoilers);
+});
+
+// New spoiler form
+router.get('/new', async (req, res) => {
+  try {
+      const mediaList = await Media.find({});
+      res.render('spoilers/new', { mediaList: mediaList, title: 'Create Spoiler' });
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+
+// Get the spoiler edit form
+router.get('/:id/edit', async (req, res) => {
+  try {
+      const spoiler = await Spoiler.findById(req.params.id).populate('media');
+      const mediaList = await Media.find({});
+      res.render('spoilers/edit', { spoiler, mediaList, title: 'Edit Spoiler' });
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+  
+// Get a single spoiler
+router.get('/:id', async (req, res) => {
+    try {
+        const spoiler = await Spoiler.findById(req.params.id);
+        res.render('spoilers/show', { spoiler, title: spoiler.title });
+    } catch (err) {
+        console.log(err);
+        res.redirect('/spoilers');
+    }
+});
+
+// Create a new spoiler
+router.post('/', async (req, res) => {
+  const newSpoiler = new Spoiler({
+      title: req.body.title,
+      intensity: req.body.intensity,
+      reference: req.body.reference,
+      media: req.body.mediaId
+  });
+  try {
+      await newSpoiler.save();
+      await Media.updateOne(
+        { _id: req.body.mediaId },
+        { $push: { spoilers: newSpoiler._id } }
+      )
+      res.redirect('/spoilers');
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers/new');
+  }
+});
+
+// Update a spoiler
+router.put('/:id', async (req, res) => {
+    try {
+      let spoiler = await Spoiler.findById(req.params.id);
+      spoiler.title = req.body.title;
+      spoiler.intensity = req.body.intensity;
+      spoiler.reference = req.body.reference;
+      spoiler.media = req.body.mediaId;
+      await spoiler.save();
+      res.redirect(`/spoilers/${spoiler.id}`);
+    } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+    }
+});
+  
+// Delete a spoiler
+router.delete('/:id', async (req, res) => {
+    try {
+      await Spoiler.findByIdAndRemove(req.params.id);
+      res.redirect('/spoilers');
+    } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+    }
+  });
+  
+module.exports = router;
+
+
+
+const express = require('express');
+const router = express.Router();
+const Media = require('../models/media');
+
+router.get('/', async (req, res) => {
+  const mediaList = await Media.find({});
+  res.render('media/index', { media: mediaList, title: 'Media List' });
+});
+
+router.get('/new', (req, res) => {
+  res.render('media/new', { title: 'Add New Media' });
+});
+
+router.get('/:id/edit', async (req, res) => {
+  try {
+    const mediaItem = await Media.findById(req.params.id);
+    res.render('media/edit', { media: mediaItem, title: `Edit ${mediaItem.title}` });
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const mediaItem = await Media.findById(req.params.id);
+    res.render('media/show', { media: mediaItem, title: mediaItem.title });
+    console.log("Success");
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+router.post('/', async (req, res) => {
+  const newMedia = new Media({
+    title: req.body.title,
+    type: req.body.type,
+  });
+  await newMedia.save();
+  res.redirect('/media');
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await Media.findByIdAndRemove(req.params.id);
+    res.redirect('/media');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+
+router.put('/:id', async (req, res) => {
+  try {
+    let mediaItem = await Media.findById(req.params.id);
+    mediaItem.title = req.body.title;
+    mediaItem.type = req.body.type;
+    await mediaItem.save();
+    res.redirect(`/media/${mediaItem.id}`);
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+module.exports = router;
+
+Please provide the updated code for each, pointing out what you've changed.

@@ -17,7 +17,11 @@ const SpoilerSchema = new mongoose.Schema({
   media: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Media'
-  }
+  },
+  urls: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'URL'
+  }]
 });
 
 module.exports = mongoose.model('Spoiler', SpoilerSchema);
