@@ -26,6 +26,17 @@ router.get('/new', async (req, res) => {
   }
 });
 
+// Get the spoiler edit form
+router.get('/:id/edit', async (req, res) => {
+  try {
+      const spoiler = await Spoiler.findById(req.params.id).populate('media');
+      const mediaList = await Media.find({});
+      res.render('spoilers/edit', { spoiler, mediaList, title: 'Edit Spoiler' });
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
   
 // Get a single spoiler
 router.get('/:id', async (req, res) => {
@@ -54,8 +65,6 @@ router.post('/', async (req, res) => {
       res.redirect('/spoilers/new');
   }
 });
-
-  
 
 // Update a spoiler
 router.put('/:id', async (req, res) => {

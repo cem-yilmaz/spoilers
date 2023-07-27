@@ -1,0 +1,35 @@
+Ehh, a few issues before making the wiki proper.
+
+First, we should definitely have a method of storing URLs that contain spoilers. The form to submit this is kinda the core of the application.
+
+I propose the process would go as follows:
+1. User enters URL into form
+2. User can select from a dropdown of all media in the database
+    2a. If the media is not in the database, the user can add it, this will bring up the media/new form. 
+        2aa. If this is successfully added, the user is redirected back to the spoiler/new form, with the new media selected.
+
+3. Once a media is selected, users can select a spoiler attached to said media. 
+    3a. If the spoiler is not in the database, the user can add it, this will bring up the spoiler/new form. 
+        3aa. If this is successfully added, the user is redirected back to the spoiler/new form, with the new spoiler selected.
+
+4. The user then submits the URL, and it is added to the database.
+
+Editing URLs follows this same ("if we dont have it, add it") process. Viewing a list of URLs has a tree structure incase there are multiple URLs for a single spoiler, and a list of all URLs for a single spoiler.
+
+E.g it may look something like
+
+Media1
+├───Spoiler1(Intensity)
+│   ├───URL1
+│   └───URL2
+├───Spoiler2(Intensity)
+│   ├───URL3
+└───Spoiler3(Intensity)
+    └───URL4
+
+Viewing an individual URL will show the URL, the spoiler it is attached to (and it's intensity), and the media it spoils.
+URLs will also have an optional description field on "how" the media spoils it, for example, if the URL is a video, the description could be the timestamp of the spoiler.
+
+Deleting a URL is nothing fancy, just a delete button next to each URL.
+
+Please provide an overview of how you'll implement this URL system, but this time provide all the files and their code for me to simply copy and paste into the project (as opposed to going bit by bit).
