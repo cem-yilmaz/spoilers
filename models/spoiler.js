@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const partSchema = require('./media').partSchema;
 
 const SpoilerSchema = new mongoose.Schema({
   title: {
