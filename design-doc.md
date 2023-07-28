@@ -1,7 +1,3 @@
-Sure, I'll generate a comprehensive design document for your project. This document will outline your project goals, key features, and implementation details.
-
----
-
 # Spoilers! for YouTube - Design Document
 
 ## Introduction
