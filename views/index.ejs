@@ -9,6 +9,11 @@
   <a href="/media/new">[Media]</a>
   <a href="/spoilers/new">[Spoiler]</a>
   <a href="/urls/new">[URL]</a>
+  <br>
+  View all:
+  <a href="/media">[Media]</a>
+  <a href="/spoilers">[Spoiler]</a>
+  <a href="/urls">[URL]</a>
   <% mediaList.forEach(media => { %>
     <p>
       <a href="/media/<%= media._id %>"><%= media.title %></a> (<%= media.type %>)

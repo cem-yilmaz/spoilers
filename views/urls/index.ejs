@@ -1,5 +1,8 @@
 <h1>All URLs</h1>
 
+<a href="/urls/new">Add new URL</a>
+<a href="/">Back to home</a>
+
 <% urls.forEach(url => { %>
   <h2><a href="/urls/<%= url._id %>"><%= url.url %></a></h2>
 
@@ -9,5 +12,3 @@
 
   <p>Description: <%= url.description || 'N/A' %></p>
 <% }); %>
-
-<a href="/urls/new">Add new URL</a>
