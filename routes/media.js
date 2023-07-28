@@ -33,9 +33,11 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
+  const parts = req.body.parts.map(title => ({ title })); // Map the parts titles to parts objects
   const newMedia = new Media({
     title: req.body.title,
     type: req.body.type,
+    parts,
     urls: [],
     spoilers: []
   });
@@ -58,8 +60,10 @@ router.delete('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     let mediaItem = await Media.findById(req.params.id);
+    const parts = req.body.parts.map(title => ({ title })); // Map the parts titles to parts objects
     mediaItem.title = req.body.title;
     mediaItem.type = req.body.type;
+    mediaItem.parts = parts;
     await mediaItem.save();
     res.redirect(`/media/${mediaItem.id}`);
   } catch (err) {
