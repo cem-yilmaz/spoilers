@@ -1047,3 +1047,22 @@ I'll provide the code for views/index.ejs, and I'd like you to provide the code 
 </body>
 </html>
 =================================================================================================
+Ok, that's all working. I've now got a new change to request for how media is handled. Currently, spoilers are just blindly attached to media, but I'd like to be able to seperate that media into parts/episodes/chapters/levels/etc.
+Media doesn't have to have this; a film for example is intended to be watched in one sitting, so it doesn't need to be seperated into parts. But a TV show has episodes, a book has chapters, a game has levels, etc. I'd like to be able to add these to media, and then attach spoilers to those parts instead of the media itself. (Note: for TV shows, which have series, I don't want nested parts. The parts would simply go like "S1E1", "S1E2", "S1E3", "S2E1", "S2E2", etc.)
+When adding a media, there'd be a tickbox saying something like:
+"Does this media have parts?"
+And if ticked, 2 new inputs would appear:
+- A dropdown for selecting whether the game seperates it's content into chapters, levels, episodes, or parts. This would also have 2 extra options: one for a custom designator, and one for "no consitent designator". This defaults to chapters for books, episodes for TV shows, levels for games and no consistent designator for anything else.
+- A number selector for the amount of parts in the media. Defaulted to 0 for clutter reasons as explained below.
+Once these 2 inputs are filled, several small textboxes render underneath them. These will be the titles for the parts. The amount of textboxes rendered is equal to the number selected in the number selector (if 0, none are rendered, which is why by default this is set to 0). These textboxes can be edited by the user but default to the designator defined earlier. In the case of a Book with 5 chapters, the boxes would have their default value filled as follows:
+- Chapter 1
+- Chapter 2
+- Chapter 3
+- Chapter 4
+- Chapter 5
+
+This feature would also be available when editing media, and would be rendered in the same way as the textboxes are rendered when adding media. When viewing media, a list of all these parts are shown alongside the other content.
+
+When adding a spoiler, the user can check a box that reads "Is this spoiler specific to any part?" and if checked, a dropdown appears showing all the parts of that media (this can also be done when editing a spoiler, to attach it to a part after adding it). The linked part is stored with the spoiler, and appears on it's show.ejs page.
+
+Please describe all the changes that are required to implement this feature, and provide the code for each change.
