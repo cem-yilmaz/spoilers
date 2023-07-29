@@ -33,7 +33,7 @@
       <input type="checkbox" id="hasParts" name="hasParts" <%= media.parts.length > 0 ? 'checked' : '' %>>
     </div>
 
-    <div id="partsFields" style="<%= media.parts.length > 0 ? 'block' : 'none' %>">
+    <div id="partsFields" style="display: <%= media.parts.length > 0 ? 'block' : 'none' %>">
       <label for="partDesignator">Part designator:</label>
       <select id="partDesignator" name="partDesignator">
         <option value="Chapter">Chapter</option>
@@ -44,11 +44,11 @@
         <option value="None">None</option>
       </select>
 
-      <label for="customDesignator" style="display: none;">Custom designator:</label>
-      <input type="text" id="customDesignator" name="customDesignator" style="display: none;">
+      <label for="customDesignator" style="display: <%= partDesignator === 'Custom' ? 'block' : 'none' %>;">Custom designator:</label>
+      <input type="text" id="customDesignator" name="customDesignator" style="display: <%= partDesignator === 'Custom' ? 'block' : 'none' %>;" value="<%= customDesignator %>">
 
       <label for="numParts">Number of parts:</label>
-      <input type="number" id="numParts" name="numParts" min="0" value="<%= media.parts.length %>">
+      <input type="number" id="numParts" name="numParts" min="0" value="<%= numParts %>">
 
       <div id="partsContainer">
         <% for(let i = 0; i < media.parts.length; i++) { %>
@@ -76,13 +76,8 @@
     numParts.addEventListener('input', handleNumPartsChange);
 
     // Initialize part designator dropdown
-    const currentDesignator = "<%= media.parts[0]?.title.split(' ')[0] || '' %>";
-    partDesignator.value = ['Chapter', 'Episode', 'Level', 'Part'].includes(currentDesignator) ? currentDesignator : 'Custom';
-    if (partDesignator.value === 'Custom') {
-      customDesignator.value = currentDesignator;
-      customDesignator.style.display = 'block';
-    }
-
+    partDesignator.value = "<%= partDesignator %>";
+    customDesignator.value = "<%= customDesignator %>";
     handlePartDesignatorChange();
 
     function handleHasPartsChange() {
@@ -113,11 +108,12 @@
       } else if (designator === 'None') {
         designator = '';
       }
+      const existingPartNames = [...document.querySelectorAll('[name^="parts["]')].map(input => input.value);
       for (let i = 0; i < num; i++) {
         const input = document.createElement('input');
         input.type = 'text';
         input.name = `parts[${i}]`;
-        input.value = designator ? `${designator} ${i + 1}` : '';
+        input.value = existingPartNames[i] || (designator ? `${designator} ${i + 1}` : '');
         partsContainer.appendChild(input);
       }
     }
