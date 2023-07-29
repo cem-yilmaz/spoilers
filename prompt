@@ -1067,186 +1067,100 @@ When adding a spoiler, the user can check a box that reads "Is this spoiler spec
 
 Please describe all the changes that are required to implement this feature, and provide the code for each change.
 =================================================================================================
-Ok, I've implemented the above changes to models/
-Here's my code for routes/media.js:
-const express = require('express');
-const router = express.Router();
-const Media = require('../models/media');
+Ok, I've changed the models/ and routes/ files.
+Let's now work on the actual .ejs pages themselves. This will involve changes to all views in views/media and views/spoilers, as well as the index.ejs page in views/.
 
-router.get('/', async (req, res) => {
-  const mediaList = await Media.find({});
-  res.render('media/index', { media: mediaList, title: 'Media List' });
-});
+Let's first work on the media views. Remember, the main things that need to be introduced:
+- A tickbox for "Does this media have parts?"
+- A dropdown for selecting whether the game seperates it's content into chapters, levels, episodes, or parts. This would also have 2 extra options: one for a custom designator, and one for "no consitent designator". This defaults to chapters for books, episodes for TV shows, levels for games and no consistent designator for anything else.
+- A number selector for the amount of parts in the media. Defaulted to 0 for clutter reasons as explained below.
+- Several small textboxes render underneath them. These will be the titles for the parts. The amount of textboxes rendered is equal to the number selected in the number selector (if 0, none are rendered, which is why by default this is set to 0). These textboxes can be edited by the user but default to the designator defined earlier. In the case of a Book with 5 chapters, the boxes would have their default value filled as follows:
+- Chapter 1
+- Chapter 2
+- Chapter 3
+- Chapter 4
+- Chapter 5
 
-router.get('/new', (req, res) => {
-  res.render('media/new', { title: 'Add New Media' });
-});
+When viewing a media, a list of all these parts are shown alongside the other content. When viewing all media this is not visible, and for this reason I don't think it's necessary to edit the index.ejs page in views/ or views/media. If you think it is, please explain why.
+We'll work on spoilers once this is all in place. For now, here's my existing code for:
 
-router.get('/:id/edit', async (req, res) => {
-  try {
-    const mediaItem = await Media.findById(req.params.id);
-    res.render('media/edit', { media: mediaItem, title: `Edit ${mediaItem.title}` });
-  } catch (err) {
-    console.log(err);
-    res.redirect('/media');
-  }
-});
+views/media/new.ejs:
+<h1>Add a new media</h1>
 
-router.get('/:id', async (req, res) => {
-  try {
-    const mediaItem = await Media.findById(req.params.id);
-    res.render('media/show', { media: mediaItem, title: mediaItem.title });
-    console.log("Success");
-  } catch (err) {
-    console.log(err);
-    res.redirect('/media');
-  }
-});
+<form action="/media" method="post">
+  <label for="title">Title</label>
+  <input type="text" id="title" name="title">
 
-router.post('/', async (req, res) => {
-  const newMedia = new Media({
-    title: req.body.title,
-    type: req.body.type,
-    urls: [],
-    spoilers: []
-  });
-  await newMedia.save();
-  res.redirect('/media');
-});
+  <label for="type">Type:</label>
+  <select id="type" name="type">
+    <option value="Video Game">Video Game</option>
+    <option value="TV Show">TV Show</option>
+    <option value="Film">Film</option>
+    <option value="Book">Book</option>
+    <option value="Sporting Event">Sporting Event</option>
+    <option value="Other">Other</option>
+  </select>
 
+  <input type="submit" value="Submit">
+</form>
 
-router.delete('/:id', async (req, res) => {
-  try {
-    await Media.findByIdAndRemove(req.params.id);
-    res.redirect('/media');
-  } catch (err) {
-    console.log(err);
-    res.redirect('/media');
-  }
-});
+views/media/edit.ejs:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+</head>
+<body>
+  <h1><%= title %></h1>
 
+  <form action="/media/<%= media._id %>?_method=PUT" method="POST">
+    <div>
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" value="<%= media.title %>">
+    </div>
 
-router.put('/:id', async (req, res) => {
-  try {
-    let mediaItem = await Media.findById(req.params.id);
-    mediaItem.title = req.body.title;
-    mediaItem.type = req.body.type;
-    await mediaItem.save();
-    res.redirect(`/media/${mediaItem.id}`);
-  } catch (err) {
-    console.log(err);
-    res.redirect('/media');
-  }
-});
+    <div>
+      <label for="type">Type:</label>
+      <select id="type" name="type">
+        <option value="Video Game" <%= media.type == 'Video Game' ? 'selected' : '' %>>Video Game</option>
+        <option value="TV Show" <%= media.type == 'TV Show' ? 'selected' : '' %>>TV Show</option>
+        <option value="Film" <%= media.type == 'Film' ? 'selected' : '' %>>Film</option>
+        <option value="Book" <%= media.type == 'Book' ? 'selected' : '' %>>Book</option>
+        <option value="Sporting Event" <%= media.type == 'Sporting Event' ? 'selected' : '' %>>Sporting Event</option>
+        <option value="Other" <%= media.type == 'Other' ? 'selected' : '' %>>Other</option>
+      </select>
+    </div>
 
-module.exports = router;
+    <button type="submit">Update Media</button>
+  </form>
 
-and here's the code for routes/spoilers.js:
-const express = require('express');
-const router = express.Router();
-const Spoiler = require('../models/spoiler');
-const Media = require('../models/media');
+  <a href="/media/<%= media._id %>">Cancel</a>
+</body>
+</html>
 
-// Get all spoilers
-router.get('/', async (req, res) => {
-  try {
-      const spoilersList = await Spoiler.find({}).populate('media');
-      res.render('spoilers/index', { spoilers: spoilersList, title: 'Spoilers List' });
-  } catch(err) {
-      console.log(err);
-      res.redirect('/spoilers');
-  }
-});
+views/media/show.ejs:
+<h1><%= media.title %></h1>
+<p>Type: <%= media.type %></p>
 
-// Get spoilers by media ID
-router.get('/media/:mediaId', async (req, res) => {
-  const spoilers = await Spoiler.find({ media: req.params.mediaId });
-  res.json(spoilers);
-});
+<a href="/media">Back</a>
+<a href="/media/<%= media._id %>/edit">Edit</a>
+<form action="/media/<%= media._id %>?_method=DELETE" method="POST">
+  <button type="submit">Delete</button>
+</form>
 
-// New spoiler form
-router.get('/new', async (req, res) => {
-  try {
-      const mediaList = await Media.find({});
-      res.render('spoilers/new', { mediaList: mediaList, title: 'Create Spoiler' });
-  } catch (err) {
-      console.log(err);
-      res.redirect('/spoilers');
-  }
-});
+Please provide the necessary additions to these files to implement the features described above.
+=================================================================================================
+Good start, but there's some issues and missing features from the form (I have not tested actually sending this data yet so more may be to follow):
 
-// Get the spoiler edit form
-router.get('/:id/edit', async (req, res) => {
-  try {
-      const spoiler = await Spoiler.findById(req.params.id).populate('media');
-      const mediaList = await Media.find({});
-      res.render('spoilers/edit', { spoiler, mediaList, title: 'Edit Spoiler' });
-  } catch (err) {
-      console.log(err);
-      res.redirect('/spoilers');
-  }
-});
-  
-// Get a single spoiler
-router.get('/:id', async (req, res) => {
-    try {
-        const spoiler = await Spoiler.findById(req.params.id);
-        res.render('spoilers/show', { spoiler, title: spoiler.title });
-    } catch (err) {
-        console.log(err);
-        res.redirect('/spoilers');
-    }
-});
+- When the part designator is set to "custom", another box should appear. This will be used to apply the designator name to the parts. For example, if the designator is set to "custom" and the custom designator is set to "level", the parts will be called "Level 1", "Level 2", etc. This box should be hidden by default, and only appear when the designator is set to "custom".
 
-// Create a new spoiler
-router.post('/', async (req, res) => {
-  const newSpoiler = new Spoiler({
-      title: req.body.title,
-      intensity: req.body.intensity,
-      reference: req.body.reference,
-      media: req.body.mediaId
-  });
-  try {
-      await newSpoiler.save();
-      await Media.updateOne(
-        { _id: req.body.mediaId },
-        { $push: { spoilers: newSpoiler._id } }
-      )
-      res.redirect('/spoilers');
-  } catch (err) {
-      console.log(err);
-      res.redirect('/spoilers/new');
-  }
-});
+- When the part designator is set to "None", the generated boxes should not have any text in them by default. Currently, they display "None 1", "None 2", etc.
 
-// Update a spoiler
-router.put('/:id', async (req, res) => {
-    try {
-      let spoiler = await Spoiler.findById(req.params.id);
-      spoiler.title = req.body.title;
-      spoiler.intensity = req.body.intensity;
-      spoiler.reference = req.body.reference;
-      spoiler.media = req.body.mediaId;
-      await spoiler.save();
-      res.redirect(`/spoilers/${spoiler.id}`);
-    } catch (err) {
-      console.log(err);
-      res.redirect('/spoilers');
-    }
-});
-  
-// Delete a spoiler
-router.delete('/:id', async (req, res) => {
-    try {
-      await Spoiler.findByIdAndRemove(req.params.id);
-      res.redirect('/spoilers');
-    } catch (err) {
-      console.log(err);
-      res.redirect('/spoilers');
-    }
-  });
-  
-module.exports = router;
+-The boxes only update on changes to the "number of parts" box. This currently doesn't apply to anything else. This updating feature should be applied to both the "part designator" box and the "custom designator" box (that you haven't added yet).
 
-Let's focus on getting these up to scratch. Please tell me what changes are needed and then provide the code for each file.
+-The hiding of the options based on the checkbox does not seem to be implemented at all in the edit form. This should be implemented.
+
+Please make these changes to these files.
 =================================================================================================

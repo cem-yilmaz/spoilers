@@ -26,9 +26,86 @@
       </select>
     </div>
 
+    <!-- Add form fields for media parts -->
+
+    <div>
+      <label for="hasParts">Does this media have parts?</label>
+      <input type="checkbox" id="hasParts" name="hasParts" <%= media.parts.length > 0 ? 'checked' : '' %>>
+    </div>
+
+    <div id="partsFields" style="<%= media.parts.length > 0 ? 'block' : 'none' %>"></div>
+      <label for="partDesignator">Part designator:</label>
+      <input type="text" id="partDesignator" name="partDesignator" value="<%= media.parts[0]?.title.split(' ')[0] || '' %>">
+
+      <label for="customDesignator" style="display: none;">Custom designator:</label>
+      <input type="text" id="customDesignator" name="customDesignator" style="display: none;" value="<%= media.parts[0]?.title.split(' ')[0] || '' %>">
+
+      <label for="numParts">Number of parts:</label>
+      <input type="number" id="numParts" name="numParts" min="0" value="<%= media.parts.length %>">
+
+      <div id="partsContainer">
+        <% for(let i = 0; i < media.parts.length; i++) { %>
+          <input type="text" name="parts[<%= i %>]" value="<%= media.parts[i].title %>">
+        <% } %>
+      </div>
+    </div>
+
     <button type="submit">Update Media</button>
   </form>
 
   <a href="/media/<%= media._id %>">Cancel</a>
+
+  <script>
+    const hasParts = document.querySelector('#hasParts');
+    const partsFields = document.querySelector('#partsFields');
+    const numParts = document.querySelector('#numParts');
+    const partDesignator = document.querySelector('#partDesignator');
+    const customDesignator = document.querySelector('#customDesignator');
+    const partsContainer = document.querySelector('#partsContainer');
+
+    hasParts.addEventListener('change', handleHasPartsChange);
+    partDesignator.addEventListener('change', handlePartDesignatorChange);
+    customDesignator.addEventListener('input', handleNumPartsChange);
+    numParts.addEventListener('input', handleNumPartsChange);
+
+    handlePartDesignatorChange();
+
+    function handleHasPartsChange() {
+      if (hasParts.checked) {
+        partsFields.style.display = 'block';
+      } else {
+        partsFields.style.display = 'none';
+        numParts.value = 0;
+        partsContainer.innerHTML = '';
+      }
+    }
+
+    function handlePartDesignatorChange() {
+      if (partDesignator.value === 'Custom') {
+        customDesignator.style.display = 'block';
+      } else {
+        customDesignator.style.display = 'none';
+      }
+      handleNumPartsChange();
+    }
+
+    function handleNumPartsChange() {
+      partsContainer.innerHTML = ''; // Clear the parts container
+      const num = numParts.value;
+      let designator = partDesignator.value;
+      if (designator === 'Custom') {
+        designator = customDesignator.value;
+      } else if (designator === 'None') {
+        designator = '';
+      }
+      for (let i = 0; i < num; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = `parts[${i}]`;
+        input.value = designator ? `${designator} ${i + 1}` : '';
+        partsContainer.appendChild(input);
+      }
+    }
+  </script>
 </body>
 </html>

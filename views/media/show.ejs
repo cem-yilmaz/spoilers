@@ -1,6 +1,13 @@
 <h1><%= media.title %></h1>
 <p>Type: <%= media.type %></p>
 
+<h2>Parts</h2>
+<ul>
+  <% media.parts.forEach(part => { %>
+    <li><%= part.title %></li>
+  <% }); %>
+</ul>
+
 <a href="/media">Back</a>
 <a href="/media/<%= media._id %>/edit">Edit</a>
 <form action="/media/<%= media._id %>?_method=DELETE" method="POST">

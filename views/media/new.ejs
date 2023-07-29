@@ -14,5 +14,82 @@
     <option value="Other">Other</option>
   </select>
 
+  <label for="hasParts">Does this media have parts?</label>
+  <input type="checkbox" id="hasParts" name="hasParts">
+
+  <div id="partsFields" style="display: none;">
+    <label for="partDesignator">Part designator:</label>
+    <select id="partDesignator" name="partDesignator">
+      <option value="Chapter">Chapter</option>
+      <option value="Episode">Episode</option>
+      <option value="Level">Level</option>
+      <option value="Part">Part</option>
+      <option value="Custom">Custom</option>
+      <option value="None">None</option>
+    </select>
+
+    <label for="customDesignator" style="display: none;">Custom designator:</label>
+    <input type="text" id="customDesignator" name="customDesignator" style="display: none;">
+
+    <label for="numParts">Number of parts:</label>
+    <input type="number" id="numParts" name="numParts" min="0" value="0">
+
+    <div id="partsContainer"></div>
+  </div>
+
   <input type="submit" value="Submit">
 </form>
+
+<a href="/media">Back to Media</a>
+<a href="/">Back to home</a>
+
+<script>
+  const hasParts = document.querySelector('#hasParts');
+  const partsFields = document.querySelector('#partsFields');
+  const numParts = document.querySelector('#numParts');
+  const partDesignator = document.querySelector('#partDesignator');
+  const customDesignator = document.querySelector('#customDesignator');
+  const partsContainer = document.querySelector('#partsContainer');
+
+  hasParts.addEventListener('change', handleHasPartsChange);
+  partDesignator.addEventListener('change', handlePartDesignatorChange);
+  customDesignator.addEventListener('input', handleNumPartsChange);
+  numParts.addEventListener('input', handleNumPartsChange);
+
+  function handleHasPartsChange() {
+    if (hasParts.checked) {
+      partsFields.style.display = 'block';
+    } else {
+      partsFields.style.display = 'none';
+      numParts.value = 0;
+      partsContainer.innerHTML = '';
+    }
+  }
+
+  function handlePartDesignatorChange() {
+    if (partDesignator.value === 'Custom') {
+      customDesignator.style.display = 'block';
+    } else {
+      customDesignator.style.display = 'none';
+    }
+    handleNumPartsChange();
+  }
+
+  function handleNumPartsChange() {
+    partsContainer.innerHTML = ''; // Clear the parts container
+    const num = numParts.value;
+    let designator = partDesignator.value;
+    if (designator === 'Custom') {
+      designator = customDesignator.value;
+    } else if (designator === 'None') {
+      designator = '';
+    }
+    for (let i = 0; i < num; i++) {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = `parts[${i}]`;
+      input.value = designator ? `${designator} ${i + 1}` : '';
+      partsContainer.appendChild(input);
+    }
+  }
+</script>
