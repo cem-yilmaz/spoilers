@@ -22,7 +22,11 @@ const SpoilerSchema = new mongoose.Schema({
   urls: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'URL'
-  }]
+  }],
+  part: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Part'
+  }
 });
 
 module.exports = mongoose.model('Spoiler', SpoilerSchema);

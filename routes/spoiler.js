@@ -23,7 +23,7 @@ router.get('/media/:mediaId', async (req, res) => {
 // New spoiler form
 router.get('/new', async (req, res) => {
   try {
-      const mediaList = await Media.find({});
+      const mediaList = await Media.find({}).populate('parts');
       res.render('spoilers/new', { mediaList: mediaList, title: 'Create Spoiler' });
   } catch (err) {
       console.log(err);
@@ -34,8 +34,8 @@ router.get('/new', async (req, res) => {
 // Get the spoiler edit form
 router.get('/:id/edit', async (req, res) => {
   try {
-      const spoiler = await Spoiler.findById(req.params.id).populate('media');
-      const mediaList = await Media.find({});
+      const spoiler = await Spoiler.findById(req.params.id).populate('media').populate('part');
+      const mediaList = await Media.find({}).populate('parts');
       res.render('spoilers/edit', { spoiler, mediaList, title: 'Edit Spoiler' });
   } catch (err) {
       console.log(err);
@@ -56,7 +56,7 @@ router.get('/:id', async (req, res) => {
 
 // Create a new spoiler
 router.post('/', async (req, res) => {
-  const part = req.body.part ? { title: req.body.part } : null; // If a part was selected, create a part object
+  const part = req.body.part !== 'Entire Media' ? { title: req.body.part } : null;
 
   const newSpoiler = new Spoiler({
     title: req.body.title,
@@ -84,7 +84,7 @@ router.put('/:id', async (req, res) => {
   try {
     let spoiler = await Spoiler.findById(req.params.id);
 
-    const part = req.body.part ? { title: req.body.part } : null; // If a part was selected, create a part object
+    const part = req.body.part !== 'Entire Media' ? { title: req.body.part } : null;
 
     spoiler.title = req.body.title;
     spoiler.intensity = req.body.intensity;

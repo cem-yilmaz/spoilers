@@ -1164,3 +1164,305 @@ Good start, but there's some issues and missing features from the form (I have n
 
 Please make these changes to these files.
 =================================================================================================
+Great, think that's everything working now with regards to media. Now onto spoilers. When adding a spoiler to a media, the user can select a part from a dropdown list (for that media) to "attach" the spoiler to, or "Entire Media" if they so desire (this is the default). When viewing a spoiler, the part it is attached to is displayed alongside it. When viewing all spoilers, this is not displayed. When editing a spoiler, this option appears on this form too.
+
+If a media has no parts attached to it, the list will only show "Entire Media".
+
+On the index.ejs page for the localhost:3000, each of the rendered spoilers will display the part (in brackets) that it is attached to. If it is attached to the entire media, this will not be displayed.
+On an individual spoilers show page, if there is a part it is attached to, this will be displayed alongside it. If it is attached to the entire media, this will not be displayed.
+
+Here's the code for the following files, for reference:
+models/spoiler.js:
+const mongoose = require('mongoose');
+const partSchema = require('./media').partSchema;
+
+const SpoilerSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  intensity: {
+    type: String,
+    required: true,
+    enum: ['No Spoilers', 'Story Beats/Mild Spoilers', 'Major Spoilers']
+  },
+  reference: {
+    type: String,
+    required: true
+  },
+  media: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Media'
+  },
+  urls: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'URL'
+  }]
+});
+
+module.exports = mongoose.model('Spoiler', SpoilerSchema);
+
+
+routes/spoilers.js:
+const express = require('express');
+const router = express.Router();
+const Spoiler = require('../models/spoiler');
+const Media = require('../models/media');
+
+// Get all spoilers
+router.get('/', async (req, res) => {
+  try {
+      const spoilersList = await Spoiler.find({}).populate('media');
+      res.render('spoilers/index', { spoilers: spoilersList, title: 'Spoilers List' });
+  } catch(err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+
+// Get spoilers by media ID
+router.get('/media/:mediaId', async (req, res) => {
+  const spoilers = await Spoiler.find({ media: req.params.mediaId });
+  res.json(spoilers);
+});
+
+// New spoiler form
+router.get('/new', async (req, res) => {
+  try {
+      const mediaList = await Media.find({});
+      res.render('spoilers/new', { mediaList: mediaList, title: 'Create Spoiler' });
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+
+// Get the spoiler edit form
+router.get('/:id/edit', async (req, res) => {
+  try {
+      const spoiler = await Spoiler.findById(req.params.id).populate('media');
+      const mediaList = await Media.find({});
+      res.render('spoilers/edit', { spoiler, mediaList, title: 'Edit Spoiler' });
+  } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+  }
+});
+  
+// Get a single spoiler
+router.get('/:id', async (req, res) => {
+    try {
+        const spoiler = await Spoiler.findById(req.params.id);
+        res.render('spoilers/show', { spoiler, title: spoiler.title });
+    } catch (err) {
+        console.log(err);
+        res.redirect('/spoilers');
+    }
+});
+
+// Create a new spoiler
+router.post('/', async (req, res) => {
+  const part = req.body.part ? { title: req.body.part } : null; // If a part was selected, create a part object
+
+  const newSpoiler = new Spoiler({
+    title: req.body.title,
+    intensity: req.body.intensity,
+    reference: req.body.reference,
+    media: req.body.mediaId,
+    part
+  });
+
+  try {
+    await newSpoiler.save();
+    await Media.updateOne(
+      { _id: req.body.mediaId },
+      { $push: { spoilers: newSpoiler._id } }
+    )
+    res.redirect('/spoilers');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers/new');
+  }
+});
+
+// Update a spoiler
+router.put('/:id', async (req, res) => {
+  try {
+    let spoiler = await Spoiler.findById(req.params.id);
+
+    const part = req.body.part ? { title: req.body.part } : null; // If a part was selected, create a part object
+
+    spoiler.title = req.body.title;
+    spoiler.intensity = req.body.intensity;
+    spoiler.reference = req.body.reference;
+    spoiler.media = req.body.mediaId;
+    spoiler.part = part;
+
+    await spoiler.save();
+    res.redirect(`/spoilers/${spoiler.id}`);
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers');
+  }
+});
+  
+// Delete a spoiler
+router.delete('/:id', async (req, res) => {
+    try {
+      await Spoiler.findByIdAndRemove(req.params.id);
+      res.redirect('/spoilers');
+    } catch (err) {
+      console.log(err);
+      res.redirect('/spoilers');
+    }
+  });
+  
+module.exports = router;
+
+
+views/spoilers/new.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add New Spoiler</title>
+</head>
+<body>
+  <h1>Add New Spoiler</h1>
+  <form action="/spoilers" method="post">
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="intensity">Intensity:</label>
+    <select id="intensity" name="intensity">
+      <option value="No Spoilers">No Spoilers</option>
+      <option value="Story Beats/Mild Spoilers">Story Beats/Mild Spoilers</option>
+      <option value="Major Spoilers">Major Spoilers</option>
+    </select><br>
+
+    <label for="reference">Reference:</label>
+    <input type="text" id="reference" name="reference">
+
+    <label for="media">Media:</label>
+    <select id="media" name="mediaId" required>
+        <% mediaList.forEach(media => { %>
+            <option value="<%= media._id %>"><%= media.title %></option>
+        <% }); %>
+    </select>
+
+    <input type="submit" value="Create">
+</form>
+
+</body>
+</html>
+
+
+views/spoilers/edit.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Spoiler</title>
+</head>
+<body>
+  <h1>Edit Spoiler</h1>
+  <form action="/spoilers/<%= spoiler._id %>?_method=PUT" method="POST">
+    <label for="title">Title:</label><br>
+    <input type="text" id="title" name="title" value="<%= spoiler.title %>"><br>
+    <label for="intensity">Intensity:</label><br>
+    <select id="intensity" name="intensity">
+      <option value="No Spoilers" <% if (spoiler.intensity === 'No Spoilers') { %>selected<% } %>>No Spoilers</option>
+      <option value="Story Beats/Mild Spoilers" <% if (spoiler.intensity === 'Story Beats/Mild Spoilers') { %>selected<% } %>>Story Beats/Mild Spoilers</option>
+      <option value="Major Spoilers" <% if (spoiler.intensity === 'Major Spoilers') { %>selected<% } %>>Major Spoilers</option>
+    </select><br>
+    <label for="reference">Reference:</label><br>
+    <input type="text" id="reference" name="reference" value="<%= spoiler.reference %>"><br>
+    <input type="hidden" id="mediaId" name="mediaId" value="<%= spoiler.media._id %>"><br>
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>
+
+
+views/spoilers/show.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= spoiler.title %></title>
+</head>
+<body>
+  <h1><%= spoiler.title %></h1>
+  <p>Intensity: <%= spoiler.intensity %></p>
+  <p>Reference: <%= spoiler.reference %></p>
+  <a href="/spoilers/<%= spoiler._id %>/edit">Edit</a>
+  <form action="/spoilers/<%= spoiler._id %>?_method=DELETE" method="POST">
+    <button type="submit">Delete</button>
+  </form>
+  <a href="/spoilers">Back</a>
+</body>
+</html>
+
+
+Please describe and provide code for all of the changes needed.
+=================================================================
+ok, I implemented the get(/new) and get(/edit) routes, but your suggestions for the create and update routes confuse me. For reference, this is what I have originally in routes/spoilers.js:
+// Create a new spoiler
+router.post('/', async (req, res) => {
+  const part = req.body.part ? { title: req.body.part } : null; // If a part was selected, create a part object
+
+  const newSpoiler = new Spoiler({
+    title: req.body.title,
+    intensity: req.body.intensity,
+    reference: req.body.reference,
+    media: req.body.mediaId,
+    part
+  });
+
+  try {
+    await newSpoiler.save();
+    await Media.updateOne(
+      { _id: req.body.mediaId },
+      { $push: { spoilers: newSpoiler._id } }
+    )
+    res.redirect('/spoilers');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers/new');
+  }
+});
+
+// Update a spoiler
+router.put('/:id', async (req, res) => {
+  try {
+    let spoiler = await Spoiler.findById(req.params.id);
+
+    const part = req.body.part ? { title: req.body.part } : null; // If a part was selected, create a part object
+
+    spoiler.title = req.body.title;
+    spoiler.intensity = req.body.intensity;
+    spoiler.reference = req.body.reference;
+    spoiler.media = req.body.mediaId;
+    spoiler.part = part;
+
+    await spoiler.save();
+    res.redirect(`/spoilers/${spoiler.id}`);
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers');
+  }
+});
+
+why do i need to change it to this like you suggested?:
+// Create a new spoiler
+router.post('/', async (req, res) => {
+  const newSpoiler = new Spoiler({
+    // ... other fields ...
+    part: req.body.partId,
+  });
+  // ... rest of the route ...
+});
+
+// Update a spoiler
+router.put('/:id', async (req, res) => {
+  // ... before updating ...
+  spoiler.part = req.body.partId;
+  // ... rest of the route ...
+});
