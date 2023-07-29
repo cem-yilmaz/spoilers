@@ -57,7 +57,10 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   console.log(req.body);
-  const parts = req.body.parts ? req.body.parts.map(title => ({ title })) : []; // Map the parts titles to parts objects
+  let parts = [];
+  for (let i = 0; req.body[`parts[${i}]`]; i++) {
+    parts.push({ title: req.body[`parts[${i}]`] });
+  }
   const newMedia = new Media({
     title: req.body.title,
     type: req.body.type,
@@ -68,6 +71,7 @@ router.post('/', async (req, res) => {
   await newMedia.save();
   res.redirect('/media');
 });
+
 
 
 router.delete('/:id', async (req, res) => {
@@ -85,7 +89,12 @@ router.put('/:id', async (req, res) => {
   try {
     console.log(req.body);
     let mediaItem = await Media.findById(req.params.id);
-    const parts = req.body.parts ? req.body.parts.map(title => ({ title })) : []; // Map the parts titles to parts objects
+
+    let parts = [];
+    for (let i = 0; req.body[`parts[${i}]`]; i++) {
+      parts.push({ title: req.body[`parts[${i}]`] });
+    }
+
     mediaItem.title = req.body.title;
     mediaItem.type = req.body.type;
     mediaItem.parts = parts;

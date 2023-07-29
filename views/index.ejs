@@ -18,7 +18,7 @@
     <p>
       <a href="/media/<%= media._id %>"><%= media.title %></a> (<%= media.type %>)
       <a href="/media/<%= media._id %>/edit">[Edit]</a>
-      <a href="/media/<%= media._id %>/delete">[Delete]</a>
+      <a href="/media/<%= media._id %>?_method=DELETE">[Delete]</a>
     </p>
     <% media.spoilers.forEach((spoiler, index, spoilersArr) => { %>
       <p style="margin-left: 20px;">
