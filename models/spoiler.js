@@ -25,7 +25,8 @@ const SpoilerSchema = new mongoose.Schema({
   }],
   part: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Part'
+    ref: 'Part',
+    default: null
   }
 });
 

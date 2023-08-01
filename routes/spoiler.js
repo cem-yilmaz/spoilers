@@ -62,14 +62,14 @@ router.get('/media/:mediaId/parts', async (req, res) => {
 
 // Create a new spoiler
 router.post('/', async (req, res) => {
-  const part = req.body.part !== 'Entire Media' ? req.body.part : undefined;
+  const partId = req.body.part.trim() !== '' ? req.body.part : null;
 
   const newSpoiler = new Spoiler({
     title: req.body.title,
     intensity: req.body.intensity,
     reference: req.body.reference,
     media: req.body.mediaId,
-    part
+    part: partId
   });
 
   try {
@@ -90,7 +90,7 @@ router.put('/:id', async (req, res) => {
   try {
     let spoiler = await Spoiler.findById(req.params.id);
 
-    const partId = req.body.partId !== '' ? req.body.partId : null;
+    const partId = req.body.part.trim() !== '' ? req.body.part : null;
 
     spoiler.title = req.body.title;
     spoiler.intensity = req.body.intensity;
