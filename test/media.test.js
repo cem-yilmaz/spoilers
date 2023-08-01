@@ -12,7 +12,7 @@ describe('Media', function() {
     it('should create a new media document', function(done) {
         const mediaData = {
             name: 'Test Media',
-            description: 'Test Media Description',
+            type: 'Other',
             parts: [{ title: 'Part 1' }, { title: 'Part 2' }] // part of media document
         };
 

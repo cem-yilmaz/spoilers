@@ -68,9 +68,23 @@ router.post('/', async (req, res) => {
     urls: [],
     spoilers: []
   });
-  await newMedia.save();
-  res.redirect('/media');
+
+  try {
+    const savedMedia = await newMedia.save();
+    
+    // If the request accepts JSON, send the savedMedia as the response
+    if (req.accepts('json')) {
+      return res.status(200).json(savedMedia);
+    }
+
+    // Otherwise, do the redirect
+    res.redirect('/media');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
 });
+
 
 
 
