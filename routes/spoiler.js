@@ -20,7 +20,7 @@ router.get('/media/:mediaId', async (req, res) => {
   res.json(spoilers);
 });
 
-// New spoiler form
+// Get the new spoiler form
 router.get('/new', async (req, res) => {
   try {
       const mediaList = await Media.find({}).populate('parts');
@@ -52,6 +52,12 @@ router.get('/:id', async (req, res) => {
         console.log(err);
         res.redirect('/spoilers');
     }
+});
+
+// Get parts by media ID
+router.get('/media/:mediaId/parts', async (req, res) => {
+  const media = await Media.findById(req.params.mediaId).populate('parts');
+  res.json(media.parts);
 });
 
 // Create a new spoiler

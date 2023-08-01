@@ -3,9 +3,9 @@
 <head>
   <title>Add New Spoiler</title>
   <script>
-    function updateParts(mediaId) {
-      const mediaWithParts = JSON.parse('<%= JSON.stringify(mediaList.filter(media => media.parts.length > 0)) %>');
-      const selectedMedia = mediaWithParts.find(media => media._id === mediaId);
+    async function updateParts(mediaId) {
+      const response = await fetch(`/spoilers/media/${mediaId}/parts`);
+      const parts = await response.json();
       const partSelect = document.getElementById('part');
 
       // Clear previous options
@@ -16,16 +16,15 @@
       // Always add 'Entire Media' option
       const entireMediaOption = document.createElement('option');
       entireMediaOption.text = 'Entire Media';
+      entireMediaOption.value = '';
       partSelect.appendChild(entireMediaOption);
 
-      if (selectedMedia) {
-        selectedMedia.parts.forEach(part => {
-          const option = document.createElement('option');
-          option.text = part.title;
-          option.value = part._id;
-          partSelect.appendChild(option);
-        });
-      }
+      parts.forEach(part => {
+        const option = document.createElement('option');
+        option.text = part.title;
+        option.value = part._id;
+        partSelect.appendChild(option);
+      });
     }
   </script>
 </head>
@@ -48,16 +47,21 @@
     <label for="media">Media:</label>
     <select id="media" name="mediaId" required onchange="updateParts(this.value)">
         <% mediaList.forEach(media => { %>
-            <option value="<%= media._id %>"><%= media.title %></option>
+            <option value="<%= media._id.toString() %>"><%= media.title %></option>
         <% }); %>
     </select>
 
     <label for="part">Part:</label>
-    <select id="part" name="partId">
+    <select id="part" name="part">
         <option value="">Entire Media</option>
+        <% if (mediaList[0].parts.length > 0) { %>
+            <% mediaList[0].parts.forEach(part => { %>
+                <option value="<%= part._id.toString() %>"><%= part.title %></option>
+            <% }); %>
+        <% } %>
     </select>
 
     <input type="submit" value="Create">
-</form>
+  </form>
 </body>
 </html>
