@@ -3,37 +3,16 @@
 <head>
   <title>Edit Spoiler</title>
   <script>
-    function updateParts(mediaId, selectedPart) {
-      const mediaWithParts = JSON.parse('<%= JSON.stringify(mediaList.filter(media => media.parts.length > 0)) %>');
-      const selectedMedia = mediaWithParts.find(media => media._id === mediaId);
-      const partSelect = document.getElementById('part');
-
-      // Clear previous options
-      while (partSelect.firstChild) {
-        partSelect.removeChild(partSelect.firstChild);
-      }
-
-      // Always add 'Entire Media' option
-      const entireMediaOption = document.createElement('option');
-      entireMediaOption.text = 'Entire Media';
-      entireMediaOption.value = '';
-      partSelect.appendChild(entireMediaOption);
-
-      if (selectedMedia) {
-        selectedMedia.parts.forEach(part => {
-          const option = document.createElement('option');
-          option.text = part.title;
-          option.value = part._id;
-          if (part._id === selectedPart) {
-            option.selected = true;
-          }
-          partSelect.appendChild(option);
-        });
-      }
-    }
-
     window.onload = function() {
-      updateParts('<%= spoiler.media._id %>', '<%= spoiler.part ? spoiler.part._id : '' %>');
+      // Preselect the appropriate part
+      const selectedPartId = '<%= spoiler.part ? spoiler.part._id : '' %>';
+      const partSelect = document.getElementById('part');
+      for(let i=0; i < partSelect.options.length; i++) {
+        if(partSelect.options[i].value === selectedPartId) {
+          partSelect.options[i].selected = true;
+          break;
+        }
+      }
     }
   </script>
 </head>
@@ -54,6 +33,9 @@
     <label for="part">Part:</label><br>
     <select id="part" name="partId">
         <option value="">Entire Media</option>
+        <% spoiler.media.parts.forEach(part => { %>
+          <option value="<%= part._id %>"><%= part.title %></option>
+        <% }); %>
     </select> 
     <input type="submit" value="Submit">
   </form>

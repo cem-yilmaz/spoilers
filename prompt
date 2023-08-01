@@ -1534,3 +1534,6 @@ Here's the code for views/spoilers/edit.ejs:
 This is mostly the same change, but with the dropdown box defaulting to whatever part (or "Entire Media") the spoiler has already been set to. If for whatever reason the spoiler is not attached to a part, it defaults to entire media.
 
 Please provide the code for the requested changes.
+=================================================================
+2 new issues, in decreasing order of importance:
+  1. 

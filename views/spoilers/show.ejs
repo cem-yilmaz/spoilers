@@ -7,6 +7,17 @@
   <h1><%= spoiler.title %></h1>
   <p>Intensity: <%= spoiler.intensity %></p>
   <p>Reference: <%= spoiler.reference %></p>
+  <p>Media: <%= spoiler.media.title %></p>
+  <%
+  let part;
+  for (let i = 0; i < spoiler.media.parts.length; i++) {
+    if (spoiler.media.parts[i]._id.toString() === spoiler.part.toString()) {
+      part = spoiler.media.parts[i];
+      break;
+    }
+  }
+  %>
+  <p>Part: <%= part ? part.title : 'Entire Media' %></p>
   <a href="/spoilers/<%= spoiler._id %>/edit">Edit</a>
   <form action="/spoilers/<%= spoiler._id %>?_method=DELETE" method="POST">
     <button type="submit">Delete</button>

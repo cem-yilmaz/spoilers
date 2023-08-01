@@ -34,7 +34,7 @@ router.get('/new', async (req, res) => {
 // Get the spoiler edit form
 router.get('/:id/edit', async (req, res) => {
   try {
-      const spoiler = await Spoiler.findById(req.params.id).populate('media').populate('part');
+      const spoiler = await Spoiler.findById(req.params.id).populate('media');
       const mediaList = await Media.find({}).populate('parts');
       res.render('spoilers/edit', { spoiler, mediaList, title: 'Edit Spoiler' });
   } catch (err) {
@@ -46,7 +46,7 @@ router.get('/:id/edit', async (req, res) => {
 // Get a single spoiler
 router.get('/:id', async (req, res) => {
     try {
-        const spoiler = await Spoiler.findById(req.params.id);
+        const spoiler = await Spoiler.findById(req.params.id).populate('media');
         res.render('spoilers/show', { spoiler, title: spoiler.title });
     } catch (err) {
         console.log(err);
@@ -56,7 +56,7 @@ router.get('/:id', async (req, res) => {
 
 // Create a new spoiler
 router.post('/', async (req, res) => {
-  const part = req.body.part !== 'Entire Media' ? { title: req.body.part } : null;
+  const part = req.body.part !== 'Entire Media' ? req.body.part : undefined;
 
   const newSpoiler = new Spoiler({
     title: req.body.title,
@@ -84,13 +84,13 @@ router.put('/:id', async (req, res) => {
   try {
     let spoiler = await Spoiler.findById(req.params.id);
 
-    const part = req.body.part !== 'Entire Media' ? { title: req.body.part } : null;
+    const partId = req.body.partId !== '' ? req.body.partId : null;
 
     spoiler.title = req.body.title;
     spoiler.intensity = req.body.intensity;
     spoiler.reference = req.body.reference;
     spoiler.media = req.body.mediaId;
-    spoiler.part = part;
+    spoiler.part = partId;
 
     await spoiler.save();
     res.redirect(`/spoilers/${spoiler.id}`);
