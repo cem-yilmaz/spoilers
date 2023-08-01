@@ -71,6 +71,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('Could not connect to MongoDB:', err));
 
+module.exports = app;
 /* 
 const db = mongoose.connection;
 db.on('error', (error) => console.error(error));
