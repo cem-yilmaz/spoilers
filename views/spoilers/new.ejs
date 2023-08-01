@@ -2,6 +2,32 @@
 <html>
 <head>
   <title>Add New Spoiler</title>
+  <script>
+    function updateParts(mediaId) {
+      const mediaWithParts = JSON.parse('<%= JSON.stringify(mediaList.filter(media => media.parts.length > 0)) %>');
+      const selectedMedia = mediaWithParts.find(media => media._id === mediaId);
+      const partSelect = document.getElementById('part');
+
+      // Clear previous options
+      while (partSelect.firstChild) {
+        partSelect.removeChild(partSelect.firstChild);
+      }
+
+      // Always add 'Entire Media' option
+      const entireMediaOption = document.createElement('option');
+      entireMediaOption.text = 'Entire Media';
+      partSelect.appendChild(entireMediaOption);
+
+      if (selectedMedia) {
+        selectedMedia.parts.forEach(part => {
+          const option = document.createElement('option');
+          option.text = part.title;
+          option.value = part._id;
+          partSelect.appendChild(option);
+        });
+      }
+    }
+  </script>
 </head>
 <body>
   <h1>Add New Spoiler</h1>
@@ -20,14 +46,18 @@
     <input type="text" id="reference" name="reference">
 
     <label for="media">Media:</label>
-    <select id="media" name="mediaId" required>
+    <select id="media" name="mediaId" required onchange="updateParts(this.value)">
         <% mediaList.forEach(media => { %>
             <option value="<%= media._id %>"><%= media.title %></option>
         <% }); %>
     </select>
 
+    <label for="part">Part:</label>
+    <select id="part" name="partId">
+        <option value="">Entire Media</option>
+    </select>
+
     <input type="submit" value="Create">
 </form>
-
 </body>
 </html>

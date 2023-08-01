@@ -1466,3 +1466,71 @@ router.put('/:id', async (req, res) => {
   spoiler.part = req.body.partId;
   // ... rest of the route ...
 });
+=================================================================
+Ok, that seems to work fine. Now let's get onto work for the views/spoilers .ejs files.
+
+Here's the code for views/spoilers/new.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add New Spoiler</title>
+</head>
+<body>
+  <h1>Add New Spoiler</h1>
+  <form action="/spoilers" method="post">
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="intensity">Intensity:</label>
+    <select id="intensity" name="intensity">
+      <option value="No Spoilers">No Spoilers</option>
+      <option value="Story Beats/Mild Spoilers">Story Beats/Mild Spoilers</option>
+      <option value="Major Spoilers">Major Spoilers</option>
+    </select><br>
+
+    <label for="reference">Reference:</label>
+    <input type="text" id="reference" name="reference">
+
+    <label for="media">Media:</label>
+    <select id="media" name="mediaId" required>
+        <% mediaList.forEach(media => { %>
+            <option value="<%= media._id %>"><%= media.title %></option>
+        <% }); %>
+    </select>
+
+    <input type="submit" value="Create">
+</form>
+
+</body>
+</html>
+
+I want this page to show a box for attaching a spoiler to a part ONLY if the media selected has parts. This dropdown list will be generated from the media, and is defaulted to "Entire Media". If the media has no parts, this dropdown list will only show "Entire Media".
+
+Here's the code for views/spoilers/edit.ejs:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Spoiler</title>
+</head>
+<body>
+  <h1>Edit Spoiler</h1>
+  <form action="/spoilers/<%= spoiler._id %>?_method=PUT" method="POST">
+    <label for="title">Title:</label><br>
+    <input type="text" id="title" name="title" value="<%= spoiler.title %>"><br>
+    <label for="intensity">Intensity:</label><br>
+    <select id="intensity" name="intensity">
+      <option value="No Spoilers" <% if (spoiler.intensity === 'No Spoilers') { %>selected<% } %>>No Spoilers</option>
+      <option value="Story Beats/Mild Spoilers" <% if (spoiler.intensity === 'Story Beats/Mild Spoilers') { %>selected<% } %>>Story Beats/Mild Spoilers</option>
+      <option value="Major Spoilers" <% if (spoiler.intensity === 'Major Spoilers') { %>selected<% } %>>Major Spoilers</option>
+    </select><br>
+    <label for="reference">Reference:</label><br>
+    <input type="text" id="reference" name="reference" value="<%= spoiler.reference %>"><br>
+    <input type="hidden" id="mediaId" name="mediaId" value="<%= spoiler.media._id %>"><br>
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>
+
+This is mostly the same change, but with the dropdown box defaulting to whatever part (or "Entire Media") the spoiler has already been set to. If for whatever reason the spoiler is not attached to a part, it defaults to entire media.
+
+Please provide the code for the requested changes.

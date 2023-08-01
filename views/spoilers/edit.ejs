@@ -2,6 +2,40 @@
 <html>
 <head>
   <title>Edit Spoiler</title>
+  <script>
+    function updateParts(mediaId, selectedPart) {
+      const mediaWithParts = JSON.parse('<%= JSON.stringify(mediaList.filter(media => media.parts.length > 0)) %>');
+      const selectedMedia = mediaWithParts.find(media => media._id === mediaId);
+      const partSelect = document.getElementById('part');
+
+      // Clear previous options
+      while (partSelect.firstChild) {
+        partSelect.removeChild(partSelect.firstChild);
+      }
+
+      // Always add 'Entire Media' option
+      const entireMediaOption = document.createElement('option');
+      entireMediaOption.text = 'Entire Media';
+      entireMediaOption.value = '';
+      partSelect.appendChild(entireMediaOption);
+
+      if (selectedMedia) {
+        selectedMedia.parts.forEach(part => {
+          const option = document.createElement('option');
+          option.text = part.title;
+          option.value = part._id;
+          if (part._id === selectedPart) {
+            option.selected = true;
+          }
+          partSelect.appendChild(option);
+        });
+      }
+    }
+
+    window.onload = function() {
+      updateParts('<%= spoiler.media._id %>', '<%= spoiler.part ? spoiler.part._id : '' %>');
+    }
+  </script>
 </head>
 <body>
   <h1>Edit Spoiler</h1>
@@ -17,6 +51,10 @@
     <label for="reference">Reference:</label><br>
     <input type="text" id="reference" name="reference" value="<%= spoiler.reference %>"><br>
     <input type="hidden" id="mediaId" name="mediaId" value="<%= spoiler.media._id %>"><br>
+    <label for="part">Part:</label><br>
+    <select id="part" name="partId">
+        <option value="">Entire Media</option>
+    </select> 
     <input type="submit" value="Submit">
   </form>
 </body>
