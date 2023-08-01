@@ -1540,3 +1540,8 @@ Next steps:
 - Probably best to try and start developing the Chrome extension and have it connect to the database.
 - Should get the wiki frontend working, with a trusted admin option to view everything as it is now
 - Then work on user system, research sponsorblock methods of voting/submission etc.
+=================================================================
+We'll design the test suite now. It's important to maintain a test suite for the core of the system so if any high level features interfere with it, we can know immediately.
+The test suite will be split into 3 parts for what we have now - a barebones CRUD system for adding media (with or without parts), spoilers (that may or may not be attached to parts), and urls attached to spoilers. Please design a list of tests that will check for functionality in every aspect of this system. Do not write code, instead provide a formatted list of tests that will be implemented.
+
+Then also, please tell me how I can introduce and run a test suite within node.js - I've never done this before.
