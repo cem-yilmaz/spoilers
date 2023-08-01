@@ -1535,5 +1535,8 @@ This is mostly the same change, but with the dropdown box defaulting to whatever
 
 Please provide the code for the requested changes.
 =================================================================
-2 new issues, in decreasing order of importance:
-  1. 
+Next steps:
+- Tests. Deffo need tests for any further changes which ChatGPT can infer the results of better
+- Probably best to try and start developing the Chrome extension and have it connect to the database.
+- Should get the wiki frontend working, with a trusted admin option to view everything as it is now
+- Then work on user system, research sponsorblock methods of voting/submission etc.
