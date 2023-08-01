@@ -64,13 +64,14 @@ const mongoose = require('mongoose');
 mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s
   socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
   keepAlive: true,
 })
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('Could not connect to MongoDB:', err));
 
+module.exports = app;
 /* 
 const db = mongoose.connection;
 db.on('error', (error) => console.error(error));

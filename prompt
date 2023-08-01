@@ -1545,3 +1545,138 @@ We'll design the test suite now. It's important to maintain a test suite for the
 The test suite will be split into 3 parts for what we have now - a barebones CRUD system for adding media (with or without parts), spoilers (that may or may not be attached to parts), and urls attached to spoilers. Please design a list of tests that will check for functionality in every aspect of this system. Do not write code, instead provide a formatted list of tests that will be implemented.
 
 Then also, please tell me how I can introduce and run a test suite within node.js - I've never done this before.
+=================================================================
+Thanks for helping me set up a basic test suite. I want you to fully flesh it out with additional tests for:
+  -Test for the successful addition of parts to a media document.
+  -Test for the successful deletion of parts from a media document.
+  -Test for the successful updating of parts in a media document.
+
+To help you get a feel for the structure of this design, here's a few files to get you started:
+models/media.js:
+const mongoose = require('mongoose');
+
+const partSchema = new mongoose.Schema({
+  title: { type: String, required: true }
+});
+
+const mediaSchema = new mongoose.Schema({
+  title: String,
+  type: { type: String, required: true, enum: ['Video Game', 'TV Show', 'Film', 'Book', 'Sporting Event', 'Other'] },
+  parts: [partSchema],
+  spoilers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Spoiler' }],
+  urls: [{ type: mongoose.Schema.Types.ObjectId, ref: 'URL' }]
+});
+
+module.exports = mongoose.model('Media', mediaSchema);
+
+
+routes/media.js:
+const express = require('express');
+const router = express.Router();
+const Media = require('../models/media');
+
+router.get('/', async (req, res) => {
+  const mediaList = await Media.find({});
+  res.render('media/index', { media: mediaList, title: 'Media List' });
+});
+
+router.get('/new', (req, res) => {
+  res.render('media/new', { title: 'Add New Media' });
+});
+
+router.get('/:id/edit', async (req, res) => {
+  try {
+    const mediaItem = await Media.findById(req.params.id);
+    let partDesignator = 'None';
+    let numParts = 0;
+    let customDesignator = '';
+    if(mediaItem.parts.length > 0) {
+      numParts = mediaItem.parts.length;
+      let prefix = mediaItem.parts[0].title.split(' ')[0];
+      if(['Chapter', 'Episode', 'Level', 'Part'].includes(prefix)) {
+        partDesignator = prefix;
+      } else {
+        let allStartWithSamePrefix = mediaItem.parts.every(part => part.title.startsWith(prefix));
+        if(allStartWithSamePrefix) {
+          partDesignator = 'Custom';
+          customDesignator = prefix;
+        }
+      }
+    }
+    res.render('media/edit', { 
+      media: mediaItem, 
+      title: `Edit ${mediaItem.title}`, 
+      partDesignator,
+      numParts,
+      customDesignator 
+    });
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+
+router.get('/:id', async (req, res) => {
+  try {
+    const mediaItem = await Media.findById(req.params.id);
+    res.render('media/show', { media: mediaItem, title: mediaItem.title });
+    console.log("Success");
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+router.post('/', async (req, res) => {
+  console.log(req.body);
+  let parts = [];
+  for (let i = 0; req.body[`parts[${i}]`]; i++) {
+    parts.push({ title: req.body[`parts[${i}]`] });
+  }
+  const newMedia = new Media({
+    title: req.body.title,
+    type: req.body.type,
+    parts,
+    urls: [],
+    spoilers: []
+  });
+  await newMedia.save();
+  res.redirect('/media');
+});
+
+
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await Media.findByIdAndRemove(req.params.id);
+    res.redirect('/media');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+
+router.put('/:id', async (req, res) => {
+  try {
+    console.log(req.body);
+    let mediaItem = await Media.findById(req.params.id);
+
+    let parts = [];
+    for (let i = 0; req.body[`parts[${i}]`]; i++) {
+      parts.push({ title: req.body[`parts[${i}]`] });
+    }
+
+    mediaItem.title = req.body.title;
+    mediaItem.type = req.body.type;
+    mediaItem.parts = parts;
+    await mediaItem.save();
+    res.redirect(`/media/${mediaItem.id}`);
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});
+
+module.exports = router;
