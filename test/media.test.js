@@ -18,6 +18,7 @@ describe('Media', function() {
 
         chai.request(server)
             .post('/media')
+            .set('Accept', 'application/json')
             .send(mediaData)
             .end(function(err, res) {
                 expect(res).to.have.status(200);
@@ -32,6 +33,7 @@ describe('Media', function() {
     it('should read an existing media document', function(done) {
         chai.request(server)
             .get(`/media/${mediaId}`)
+            .set('Accept', 'application/json')
             .end(function(err, res) {
                 expect(res).to.have.status(200);
                 expect(res.body).to.be.an('object');
@@ -50,6 +52,7 @@ describe('Media', function() {
 
         chai.request(server)
             .put(`/media/${mediaId}`)
+            .set('Accept', 'application/json')
             .send(updatedData)
             .end(function(err, res) {
                 expect(res).to.have.status(200);
@@ -69,6 +72,7 @@ describe('Media', function() {
 
         chai.request(server)
             .put(`/media/${mediaId}`)
+            .set('Accept', 'application/json')
             .send(updatedData)
             .end(function(err, res) {
                 expect(res).to.have.status(200);

@@ -49,7 +49,7 @@ router.get('/:id', async (req, res) => {
     const mediaItem = await Media.findById(req.params.id);
     
     // Check if the request accepts JSON, and send JSON if so
-    if (req.accepts('json')) {
+    if (req.get('Accept') === 'application/json') {
       return res.json(mediaItem);
     }
 
@@ -59,7 +59,7 @@ router.get('/:id', async (req, res) => {
     console.error(err);
     
     // If the request accepts JSON, send the error as the response
-    if (req.accepts('json')) {
+    if (req.get('Accept') === 'application/json') {
       return res.status(500).json(err);
     }
 
@@ -86,7 +86,7 @@ router.post('/', async (req, res) => {
     const savedMedia = await newMedia.save();
     
     // If the request accepts JSON, send the savedMedia as the response
-    if (req.accepts('json')) {
+    if (req.get('Accept') === 'application/json') {
       return res.status(200).json(savedMedia);
     }
 
@@ -97,9 +97,6 @@ router.post('/', async (req, res) => {
     res.status(500).json(err);
   }
 });
-
-
-
 
 router.delete('/:id', async (req, res) => {
   try {
@@ -128,7 +125,7 @@ router.put('/:id', async (req, res) => {
     const savedMedia = await mediaItem.save();
 
     // If the request accepts JSON, send the savedMedia as the response
-    if (req.accepts('json')) {
+    if (req.get('Accept') === 'application/json') {
       return res.status(200).json(savedMedia);
     }
     res.redirect(`/media/${mediaItem.id}`);
