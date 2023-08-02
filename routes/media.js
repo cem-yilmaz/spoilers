@@ -70,8 +70,6 @@ router.get('/:id', async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-  //console.log("Begin debug")
-  //console.log(req.body);
   let parts = [];
   for (let i = 0; req.body[`parts[${i}]`]; i++) {
     parts.push({ title: req.body[`parts[${i}]`] });
