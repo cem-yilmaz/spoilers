@@ -1815,3 +1815,239 @@ router.put('/:id', async (req, res) => {
 module.exports = router;
 
 Using this, find the error and fix it.
+=================================================================
+This is strange. This is my code for the first test:
+// Test for the successful creation of a media document
+    it('should create a new media document', function(done) {
+        const mediaData = {
+            name: 'Test Media',
+            type: 'Other',
+            parts: [{ title: 'Part 1' }, { title: 'Part 2' }] // part of media document
+        };
+
+        chai.request(server)
+            .post('/media')
+            .send(mediaData)
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.an('object');
+                expect(res.body).to.have.property('_id');
+                mediaId = res.body._id;
+                done();
+            });
+    });
+(note the only fields necessary are name, type, and parts. spoilers and urls are not necessary)
+
+and this is the error I get when i run `npm test`:
+Error: Media validation failed: type: Path `type` is required.
+    at ValidationError.inspect (D:\School\Misc\spoilers\node_modules\mongoose\lib\error\validation.js:50:26)
+    at internal/per_context/primordials.js:23:32
+    at formatValue (internal/util/inspect.js:775:19)
+    at inspect (internal/util/inspect.js:337:10)
+    at formatWithOptionsInternal (internal/util/inspect.js:2008:40)
+    at formatWithOptions (internal/util/inspect.js:1890:10)
+    at console.value (internal/console/constructor.js:330:14)
+    at console.warn (internal/console/constructor.js:363:61)
+    at D:\School\Misc\spoilers\routes\media.js:83:13
+    at processTicksAndRejections (internal/process/task_queues.js:93:5) {
+  errors: {
+    type: ValidatorError: Path `type` is required.
+        at validate (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1365:13)
+        at SchemaString.SchemaType.doValidate (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1349:7)
+        at D:\School\Misc\spoilers\node_modules\mongoose\lib\document.js:2942:18
+        at processTicksAndRejections (internal/process/task_queues.js:75:11) {
+      properties: [Object],
+      kind: 'required',
+      path: 'type',
+      value: undefined,
+      reason: undefined,
+      [Symbol(mongoose:validatorError)]: true
+    }
+  },
+  _message: 'Media validation failed'
+}
+    1) should create a new media document
+CastError: Cast to ObjectId failed for value "undefined" (type string) at path "_id" for model "Media"
+    at ObjectId.cast (D:\School\Misc\spoilers\node_modules\mongoose\lib\schema\objectid.js:250:11)
+    at ObjectId.SchemaType.applySetters (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1220:12)
+    at ObjectId.SchemaType.castForQuery (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1632:15)
+    at cast (D:\School\Misc\spoilers\node_modules\mongoose\lib\cast.js:356:32)
+    at model.Query.Query.cast (D:\School\Misc\spoilers\node_modules\mongoose\lib\query.js:4901:12)
+    at model.Query.Query._castConditions (D:\School\Misc\spoilers\node_modules\mongoose\lib\query.js:2224:10)
+    at model.Query._findOne (D:\School\Misc\spoilers\node_modules\mongoose\lib\query.js:2511:8)
+    at model.Query.exec (D:\School\Misc\spoilers\node_modules\mongoose\lib\query.js:4420:28)
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+    at async D:\School\Misc\spoilers\routes\media.js:49:23 {
+  stringValue: '"undefined"',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: 'undefined',
+  path: '_id',
+  reason: BSONError: Argument passed in must be a string of 12 bytes or a string of 24 hex characters or an integer
+      at new ObjectId (D:\School\Misc\spoilers\node_modules\bson\lib\bson.cjs:2006:23)
+      at castObjectId (D:\School\Misc\spoilers\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at ObjectId.cast (D:\School\Misc\spoilers\node_modules\mongoose\lib\schema\objectid.js:248:12)
+      at ObjectId.SchemaType.applySetters (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1220:12)
+      at ObjectId.SchemaType.castForQuery (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1632:15)
+      at cast (D:\School\Misc\spoilers\node_modules\mongoose\lib\cast.js:356:32)
+      at model.Query.Query.cast (D:\School\Misc\spoilers\node_modules\mongoose\lib\query.js:4901:12)
+      at model.Query.Query._castConditions (D:\School\Misc\spoilers\node_modules\mongoose\lib\query.js:2224:10)
+      at model.Query._findOne (D:\School\Misc\spoilers\node_modules\mongoose\lib\query.js:2511:8)
+      at model.Query.exec (D:\School\Misc\spoilers\node_modules\mongoose\lib\query.js:4420:28)
+      at processTicksAndRejections (internal/process/task_queues.js:93:5)
+      at async D:\School\Misc\spoilers\routes\media.js:49:23,
+  valueType: 'string',
+  model: Model { Media }
+}
+=================================================================
+This is literally in my routes/media.js file:
+router.post('/', async (req, res) => {
+  console.log(req.body);
+  let parts = [];
+  for (let i = 0; req.body[`parts[${i}]`]; i++) {
+    parts.push({ title: req.body[`parts[${i}]`] });
+  }
+  const newMedia = new Media({
+    title: req.body.title,
+    type: req.body.type,
+    parts,
+    urls: [],
+    spoilers: []
+  });
+
+  try {
+    const savedMedia = await newMedia.save();
+    
+    // If the request accepts JSON, send the savedMedia as the response
+    if (req.accepts('json')) {
+      return res.status(200).json(savedMedia);
+    }
+
+    // Otherwise, do the redirect
+    res.redirect('/media');
+  } catch (err) {
+    console.error(err);
+    res.status(500).json(err);
+  }
+});
+
+It already console.logs. surely that's what I pasted to you is it not? I just tested it by printing "begin debug" before the console.log(req.body) and can confirm I have pasted you the correct output. Please get to the bottom of this. There's no middleware, it just uses mongoDB. The database connection works cause I can access the localhost:3000
+=================================================================
+Right, onto fixing the next test. Here's the basic output of the failing test:
+3 passing (135ms)
+  2 failing
+
+  1) Media
+       should update an existing media document:
+     Uncaught AssertionError: expected {} to have property 'title'
+      at D:\School\Misc\spoilers\test\media.test.js:56:42
+      at Test.Request.callback (node_modules\superagent\lib\node\index.js:857:12)
+      at IncomingMessage.<anonymous> (node_modules\superagent\lib\node\index.js:1070:18)
+      at endReadableNT (internal/streams/readable.js:1327:12)
+      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+
+Here's the more indepth output from the test's execution:
+Connected to MongoDB
+    ✔ should create a new media document (48ms)
+    ✔ should read an existing media document
+Error: Media validation failed: type: Path `type` is required.
+    at ValidationError.inspect (D:\School\Misc\spoilers\node_modules\mongoose\lib\error\validation.js:50:26)
+    at internal/per_context/primordials.js:23:32
+    at formatValue (internal/util/inspect.js:775:19)
+    at inspect (internal/util/inspect.js:337:10)
+    at formatWithOptionsInternal (internal/util/inspect.js:2008:40)
+    at formatWithOptions (internal/util/inspect.js:1890:10)
+    at console.value (internal/console/constructor.js:323:14)
+    at console.log (internal/console/constructor.js:358:61)
+    at D:\School\Misc\spoilers\routes\media.js:138:13
+    at processTicksAndRejections (internal/process/task_queues.js:93:5) {
+  errors: {
+    type: ValidatorError: Path `type` is required.
+        at validate (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1365:13)
+        at SchemaString.SchemaType.doValidate (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1349:7)
+        at D:\School\Misc\spoilers\node_modules\mongoose\lib\document.js:2942:18
+        at processTicksAndRejections (internal/process/task_queues.js:75:11) {
+      properties: [Object],
+      kind: 'required',
+      path: 'type',
+      value: undefined,
+      reason: undefined,
+      [Symbol(mongoose:validatorError)]: true
+    }
+  },
+  _message: 'Media validation failed'
+}
+    1) should update an existing media document
+Error: Media validation failed: type: Path `type` is required.
+    at ValidationError.inspect (D:\School\Misc\spoilers\node_modules\mongoose\lib\error\validation.js:50:26)
+    at internal/per_context/primordials.js:23:32
+    at formatValue (internal/util/inspect.js:775:19)
+    at inspect (internal/util/inspect.js:337:10)
+    at formatWithOptionsInternal (internal/util/inspect.js:2008:40)
+    at formatWithOptions (internal/util/inspect.js:1890:10)
+    at console.value (internal/console/constructor.js:323:14)
+    at console.log (internal/console/constructor.js:358:61)
+    at D:\School\Misc\spoilers\routes\media.js:138:13
+    at processTicksAndRejections (internal/process/task_queues.js:93:5) {
+  errors: {
+    type: ValidatorError: Path `type` is required.
+        at validate (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1365:13)
+        at SchemaString.SchemaType.doValidate (D:\School\Misc\spoilers\node_modules\mongoose\lib\schematype.js:1349:7)
+        at D:\School\Misc\spoilers\node_modules\mongoose\lib\document.js:2942:18
+        at processTicksAndRejections (internal/process/task_queues.js:75:11) {
+      properties: [Object],
+      kind: 'required',
+      path: 'type',
+      value: undefined,
+      reason: undefined,
+      [Symbol(mongoose:validatorError)]: true
+    }
+  },
+  _message: 'Media validation failed'
+}
+
+and here's the code for the test:
+// Test for the successful update of a media document
+    it('should update an existing media document', function(done) {
+        const updatedData = {
+            title: 'Updated Test Media',
+            parts: [{ title: 'Updated Part 1' }, { title: 'Updated Part 2' }] // updated parts
+        };
+
+        chai.request(server)
+            .put(`/media/${mediaId}`)
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.an('object');
+                expect(res.body).to.have.property('title', 'Updated Test Media');
+                done();
+            });
+    });
+
+and finally, the relevant snippet of routes/media.js:
+router.put('/:id', async (req, res) => {
+  try {
+    //console.log(req.body);
+    let mediaItem = await Media.findById(req.params.id);
+
+    let parts = [];
+    for (let i = 0; req.body[`parts[${i}]`]; i++) {
+      parts.push({ title: req.body[`parts[${i}]`] });
+    }
+
+    mediaItem.title = req.body.title;
+    mediaItem.type = req.body.type;
+    mediaItem.parts = parts;
+    const savedMedia = await mediaItem.save();
+
+    // If the request accepts JSON, send the savedMedia as the response
+    if (req.accepts('json')) {
+      return res.status(200).json(savedMedia);
+    }
+    res.redirect(`/media/${mediaItem.id}`);
+  } catch (err) {
+    console.log(err);
+    res.redirect('/media');
+  }
+});

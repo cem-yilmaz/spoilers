@@ -1,5 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const mongoose = require('mongoose');
 const server = require('../app');
 const expect = chai.expect;
 
@@ -11,7 +12,7 @@ describe('Media', function() {
     // Test for the successful creation of a media document
     it('should create a new media document', function(done) {
         const mediaData = {
-            name: 'Test Media',
+            title: 'Test Media',
             type: 'Other',
             parts: [{ title: 'Part 1' }, { title: 'Part 2' }] // part of media document
         };
@@ -43,7 +44,8 @@ describe('Media', function() {
     // Test for the successful update of a media document
     it('should update an existing media document', function(done) {
         const updatedData = {
-            name: 'Updated Test Media',
+            title: 'Updated Test Media',
+            type: 'Other',
             parts: [{ title: 'Updated Part 1' }, { title: 'Updated Part 2' }] // updated parts
         };
 
@@ -53,7 +55,7 @@ describe('Media', function() {
             .end(function(err, res) {
                 expect(res).to.have.status(200);
                 expect(res.body).to.be.an('object');
-                expect(res.body).to.have.property('name', 'Updated Test Media');
+                expect(res.body).to.have.property('title', 'Updated Test Media');
                 done();
             });
     });
@@ -61,7 +63,8 @@ describe('Media', function() {
     // Test for the successful deletion of parts from a media document
     it('should delete parts from an existing media document', function(done) {
         const updatedData = {
-            name: 'Updated Test Media',
+            title: 'Updated Test Media',
+            type: 'Other',
             parts: []  // Empty array to delete all parts
         };
 

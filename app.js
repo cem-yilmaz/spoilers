@@ -26,6 +26,7 @@ app.set('layout', 'layout');
 
 // Set up body-parser to parse form data
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // Set up method-override to allow PUT and DELETE requests to be sent via POST
 app.use(methodOverride('_method'));
@@ -72,8 +73,3 @@ mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
 .catch(err => console.error('Could not connect to MongoDB:', err));
 
 module.exports = app;
-/* 
-const db = mongoose.connection;
-db.on('error', (error) => console.error(error));
-db.once('open', () => console.log('Connected to database'));
- */

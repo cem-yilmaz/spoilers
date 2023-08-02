@@ -47,16 +47,31 @@ router.get('/:id/edit', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const mediaItem = await Media.findById(req.params.id);
+    
+    // Check if the request accepts JSON, and send JSON if so
+    if (req.accepts('json')) {
+      return res.json(mediaItem);
+    }
+
+    // Otherwise, render the view
     res.render('media/show', { media: mediaItem, title: mediaItem.title });
-    console.log("Success");
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    
+    // If the request accepts JSON, send the error as the response
+    if (req.accepts('json')) {
+      return res.status(500).json(err);
+    }
+
+    // Otherwise, do the redirect
     res.redirect('/media');
   }
 });
 
+
 router.post('/', async (req, res) => {
-  console.log(req.body);
+  //console.log("Begin debug")
+  //console.log(req.body);
   let parts = [];
   for (let i = 0; req.body[`parts[${i}]`]; i++) {
     parts.push({ title: req.body[`parts[${i}]`] });
@@ -101,7 +116,7 @@ router.delete('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    console.log(req.body);
+    //console.log(req.body);
     let mediaItem = await Media.findById(req.params.id);
 
     let parts = [];
@@ -112,7 +127,12 @@ router.put('/:id', async (req, res) => {
     mediaItem.title = req.body.title;
     mediaItem.type = req.body.type;
     mediaItem.parts = parts;
-    await mediaItem.save();
+    const savedMedia = await mediaItem.save();
+
+    // If the request accepts JSON, send the savedMedia as the response
+    if (req.accepts('json')) {
+      return res.status(200).json(savedMedia);
+    }
     res.redirect(`/media/${mediaItem.id}`);
   } catch (err) {
     console.log(err);
