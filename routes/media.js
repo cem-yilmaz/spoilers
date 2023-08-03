@@ -71,8 +71,10 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   let parts = [];
-  for (let i = 0; req.body[`parts[${i}]`]; i++) {
-    parts.push({ title: req.body[`parts[${i}]`] });
+  if (req.body.parts) {
+    for (let i = 0; i < req.body.parts.length; i++) {
+      parts.push({ title: req.body.parts[i].title });
+    }
   }
   const newMedia = new Media({
     title: req.body.title,
