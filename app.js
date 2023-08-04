@@ -26,6 +26,7 @@ app.set('layout', 'layout');
 
 // Set up body-parser to parse form data
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // Set up method-override to allow PUT and DELETE requests to be sent via POST
 app.use(methodOverride('_method'));
@@ -54,17 +55,17 @@ app.use('/spoilers', spoilerRoutes);
 // Set up our URL routes
 app.use('/urls', URLRoutes);
 
-// Start the server
-app.listen(3000, () => {
+// Start the server - FUNCTIONALITY MOVED TO server.js
+/* app.listen(3000, () => {
   console.log('Server is running on port 3000');
-});
+}); */
 
 const mongoose = require('mongoose');
 
 mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s
   socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
   keepAlive: true,
 })
@@ -72,8 +73,3 @@ mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
 .catch(err => console.error('Could not connect to MongoDB:', err));
 
 module.exports = app;
-/* 
-const db = mongoose.connection;
-db.on('error', (error) => console.error(error));
-db.once('open', () => console.log('Connected to database'));
- */
