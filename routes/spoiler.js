@@ -86,7 +86,7 @@ router.get('/media/:mediaId/parts', async (req, res) => {
 
 // Create a new spoiler
 router.post('/', async (req, res) => {
-  const partId = req.body.part.trim() !== '' ? req.body.part : null;
+  const partId = req.body.part && req.body.part.trim() !== '' ? req.body.part : null;
 
   const newSpoiler = new Spoiler({
     title: req.body.title,
@@ -96,10 +96,20 @@ router.post('/', async (req, res) => {
     part: partId
   });
 
+  // Validate the model
+  const validationError = newSpoiler.validateSync();
+  if (validationError) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Validation failed',
+      errors: validationError.errors
+    });
+  }
+
   try {
     await newSpoiler.save();
     await Media.updateOne(
-      { _id: req.body.mediaId },
+      { _id: req.body.media },
       { $push: { spoilers: newSpoiler._id } }
     )
     // Test compatability
@@ -118,7 +128,7 @@ router.put('/:id', async (req, res) => {
   try {
     let spoiler = await Spoiler.findById(req.params.id);
 
-    const partId = req.body.part.trim() !== '' ? req.body.part : null;
+    const partId = req.body.part && req.body.part.trim() !== '' ? req.body.part : null;
 
     spoiler.title = req.body.title;
     spoiler.intensity = req.body.intensity;

@@ -1,0 +1,68 @@
+New idea: how about we add some more detailed checks into our post route so we can validate every feature?
+
+Here's the models/spoiler.js file:
+const mongoose = require('mongoose');
+const partSchema = require('./media').partSchema;
+
+const SpoilerSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  intensity: {
+    type: String,
+    required: true,
+    enum: ['No Spoilers', 'Story Beats/Mild Spoilers', 'Major Spoilers']
+  },
+  reference: {
+    type: String,
+    required: true
+  },
+  media: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Media'
+  },
+  urls: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'URL'
+  }],
+  part: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Part',
+    default: null
+  }
+});
+
+module.exports = mongoose.model('Spoiler', SpoilerSchema);
+
+and here's the post route in routes/spoilers.js:
+// Create a new spoiler
+router.post('/', async (req, res) => {
+  const partId = req.body.part.trim() !== '' ? req.body.part : null;
+
+  const newSpoiler = new Spoiler({
+    title: req.body.title,
+    intensity: req.body.intensity,
+    reference: req.body.reference,
+    media: req.body.mediaId,
+    part: partId
+  });
+
+  try {
+    await newSpoiler.save();
+    await Media.updateOne(
+      { _id: req.body.media },
+      { $push: { spoilers: newSpoiler._id } }
+    )
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json(newSpoiler);
+    }
+    res.redirect('/spoilers');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers/new');
+  }
+});
+
+can you modify this post route to include validation for the model? This is mainly so the test quotes the correct error message, instead of the vague "timeout" one - the timeout is because it's never making it correctly. provide the full new code for the post route.

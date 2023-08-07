@@ -2051,3 +2051,389 @@ router.put('/:id', async (req, res) => {
     res.redirect('/media');
   }
 });
+=================================================================
+Here's spoilers.test.js:
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const server = require('../app');
+const expect = chai.expect;
+
+chai.use(chaiHttp);
+
+describe('Spoilers', function() {
+    let spoilerId;  // will be used to store the ID of the created spoiler document
+    let mediaId;    // will be used to store the ID of the associated media document
+    let partId;     // will be used to store the ID of the part associated with the spoiler document, from the media document
+
+    // Spoilers need a media document to be associated with
+    before(async function() {
+        const mediaData = {
+            title: 'Test Media',
+            type: 'Other',
+            parts: [{ title: 'Part 1' }, { title: 'Part 2' }]
+        };
+
+        let res = await chai.request(server)
+            .post('/media')
+            .set('Accept', 'application/json')
+            .send(mediaData);
+
+        mediaId = res.body._id;
+
+        res = await chai.request(server)
+            .get(`/media/${mediaId}`)
+            .set('Accept', 'application/json');
+
+        console.log("Media:", res.body);
+
+        partId = res.body.parts[0]._id;
+        console.log("First Part ID of media:", partId);
+    });
+
+    // Test for the successful creation of a spoiler document, not associated with a part
+    it('should create a new spoiler document with no part associtation', function(done) {
+        const spoilerData = {
+            title: 'Test Spoiler',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.an('object');
+                expect(res.body).to.have.property('_id');
+                spoilerId = res.body._id;
+                done();
+            });
+    }); 
+    
+    // Test for the successful reading of a spoiler document, not associated with a part
+    it('should read an existing spoiler document with no part associtation', function(done) {
+        chai.request(server)
+            .get(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.an('object');
+                expect(res.body).to.have.property('_id', spoilerId);
+                done();
+            });
+    });
+
+    // Test for editing a spoiler document, not associated with a part
+    it('should update an existing spoiler document', function(done) {
+        const updatedData = {
+            title: 'Updated Test Spoiler',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .put(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.an('object');
+                expect(res.body).to.have.property('title', 'Updated Test Spoiler');
+                done();
+            });
+    });
+
+    // Test for deleting a spoiler document, not associated with a part
+    it('should delete an existing spoiler document', function(done) {
+        chai.request(server)
+            .delete(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                done();
+            });
+    });
+
+    // Test for the successful creation of a spoiler document, associated with a part
+    it('should create a new spoiler document with a part associtation', function(done) {
+        const spoilerData = {
+            title: 'Test Spoiler with part attached',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: mediaId,
+            part: partId
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.an('object');
+                expect(res.body).to.have.property('_id');
+                spoilerId = res.body._id;
+                done();
+            });
+    });
+
+    // Test for the successful reading of a spoiler document, associated with a part
+    it('should read an existing spoiler document with a part associtation', function(done) {
+        chai.request(server)
+            .get(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.an('object');
+                expect(res.body).to.have.property('_id', spoilerId);
+                done();
+            });
+    });
+
+    // Test for editing a spoiler document, associated with a part
+    it('should update an existing spoiler document', function(done) {
+        const updatedData = {
+            title: 'Updated Test Spoiler with part attached',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: mediaId,
+            part: partId
+        };
+
+        chai.request(server)
+            .put(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                expect(res.body).to.be.an('object');
+                expect(res.body).to.have.property('title', 'Updated Test Spoiler with part attached');
+                done();
+            });
+    });
+
+    // Test for deleting a spoiler document, associated with a part
+    it('should delete an existing spoiler document', function(done) {
+        chai.request(server)
+            .delete(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                done();
+            });
+    });
+
+    // Still necessary to delete the media document created for these tests
+    after(async function() {
+        const res = await chai.request(server)
+            .delete(`/media/${mediaId}`)
+            .set('Accept', 'application/json');
+        console.log("Deleted Media ID:", mediaId);
+    });
+
+});
+
+Here's routes/spoilers.js:
+const express = require('express');
+const router = express.Router();
+const Spoiler = require('../models/spoiler');
+const Media = require('../models/media');
+
+// Get all spoilers
+router.get('/', async (req, res) => {
+  try {
+    const spoilersList = await Spoiler.find({}).populate('media');
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json(spoilersList);
+    }
+    res.render('spoilers/index', { spoilers: spoilersList, title: 'Spoilers List' });
+  } catch(err) {
+    console.log(err);
+    res.redirect('/spoilers');
+  }
+});
+
+// Get spoilers by media ID
+router.get('/media/:mediaId', async (req, res) => {
+  const spoilers = await Spoiler.find({ media: req.params.mediaId });
+  // Test compatability
+  if (req.get('Accept') === 'application/json') {
+    return res.status(200).json(spoilers);
+  }
+  res.json(spoilers);
+});
+
+// Get the new spoiler form
+router.get('/new', async (req, res) => {
+  try {
+    const mediaList = await Media.find({}).populate('parts');
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json(mediaList);
+    }
+    res.render('spoilers/new', { mediaList: mediaList, title: 'Create Spoiler' });
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers');
+  }
+});
+
+// Get the spoiler edit form
+router.get('/:id/edit', async (req, res) => {
+  try {
+    const spoiler = await Spoiler.findById(req.params.id).populate('media');
+    const mediaList = await Media.find({}).populate('parts');
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json({ spoiler, mediaList });
+    }
+    res.render('spoilers/edit', { spoiler, mediaList, title: 'Edit Spoiler' });
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers');
+  }
+});
+
+// Get a single spoiler
+router.get('/:id', async (req, res) => {
+  try {
+    const spoiler = await Spoiler.findById(req.params.id).populate('media');
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json(spoiler);
+    }
+    res.render('spoilers/show', { spoiler, title: spoiler.title });
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers');
+  }
+});
+
+// Get parts by media ID
+router.get('/media/:mediaId/parts', async (req, res) => {
+  const media = await Media.findById(req.params.mediaId).populate('parts');
+  // Test compatability
+  if (req.get('Accept') === 'application/json') {
+    return res.status(200).json(media.parts);
+  }
+  res.json(media.parts);
+});
+
+// Create a new spoiler
+router.post('/', async (req, res) => {
+  const partId = req.body.part.trim() !== '' ? req.body.part : null;
+
+  const newSpoiler = new Spoiler({
+    title: req.body.title,
+    intensity: req.body.intensity,
+    reference: req.body.reference,
+    media: req.body.mediaId,
+    part: partId
+  });
+
+  try {
+    await newSpoiler.save();
+    await Media.updateOne(
+      { _id: req.body.mediaId },
+      { $push: { spoilers: newSpoiler._id } }
+    )
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json(newSpoiler);
+    }
+    res.redirect('/spoilers');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers/new');
+  }
+});
+
+// Update a spoiler
+router.put('/:id', async (req, res) => {
+  try {
+    let spoiler = await Spoiler.findById(req.params.id);
+
+    const partId = req.body.part.trim() !== '' ? req.body.part : null;
+
+    spoiler.title = req.body.title;
+    spoiler.intensity = req.body.intensity;
+    spoiler.reference = req.body.reference;
+    spoiler.media = req.body.mediaId;
+    spoiler.part = partId;
+
+    await spoiler.save();
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json(spoiler);
+    }
+    res.redirect(`/spoilers/${spoiler.id}`);
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers');
+  }
+});
+
+// Delete a spoiler
+router.delete('/:id', async (req, res) => {
+  try {
+    await Spoiler.findByIdAndRemove(req.params.id);
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json({ message: 'Spoiler deleted successfully.' });
+    }
+    res.redirect('/spoilers');
+  } catch (err) {
+    console.log(err);
+    res.redirect('/spoilers');
+  }
+});
+
+module.exports = router;
+
+and here's my test results:
+  model: Model { Spoiler }
+}
+    ✔ should delete an existing spoiler document
+    ✔ should create a new spoiler document with a part associtation
+    ✔ should read an existing spoiler document with a part associtation
+    ✔ should update an existing spoiler document
+    ✔ should delete an existing spoiler document
+Deleted Media ID: 64d0bc1dd693af026097543a
+
+
+  10 passing (2s)
+  3 failing
+
+  1) Spoilers
+       should create a new spoiler document with no part associtation:
+     Error: Timeout of 2000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves. (D:\School\Misc\spoilers\test\spoilers.test.js)
+      at listOnTimeout (internal/timers.js:554:17)
+      at processTimers (internal/timers.js:497:7)
+
+  2) Spoilers
+       should read an existing spoiler document with no part associtation:
+     Uncaught AssertionError: expected [ { part: null, …(7) }, …(6) ] to be an object
+      at D:\School\Misc\spoilers\test\spoilers.test.js:67:40
+      at Test.Request.callback (node_modules\superagent\lib\node\index.js:857:12)
+      at D:\School\Misc\spoilers\node_modules\superagent\lib\node\index.js:1070:18
+      at IncomingMessage.<anonymous> (node_modules\superagent\lib\node\parsers\json.js:21:7)
+      at endReadableNT (internal/streams/readable.js:1327:12)
+      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+
+  3) Spoilers
+       should update an existing spoiler document:
+     Uncaught AssertionError: expected [ { part: null, …(7) }, …(6) ] to be an object
+      at D:\School\Misc\spoilers\test\spoilers.test.js:88:40
+      at Test.Request.callback (node_modules\superagent\lib\node\index.js:857:12)
+      at D:\School\Misc\spoilers\node_modules\superagent\lib\node\index.js:1070:18
+      at IncomingMessage.<anonymous> (node_modules\superagent\lib\node\parsers\json.js:21:7)
+      at endReadableNT (internal/streams/readable.js:1327:12)
+      at processTicksAndRejections (internal/process/task_queues.js:80:21)
+
+Using this information, provide the code snippets that I need to alter or change in my routes or test documents. Do not provide abstract information, provide concrete solutions backed up by reasons.
+==================================================================
+Goodbye file `prompt`

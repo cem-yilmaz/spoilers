@@ -29,10 +29,7 @@ describe('Spoilers', function() {
             .get(`/media/${mediaId}`)
             .set('Accept', 'application/json');
 
-        console.log("Media:", res.body);
-
         partId = res.body.parts[0]._id;
-        console.log("First Part ID of media:", partId);
     });
 
     // Test for the successful creation of a spoiler document, not associated with a part
@@ -41,7 +38,7 @@ describe('Spoilers', function() {
             title: 'Test Spoiler',
             intensity: 'No Spoilers',
             reference: 'Test Reference',
-            media: mediaId
+            mediaId: mediaId
         };
 
         chai.request(server)
@@ -71,7 +68,7 @@ describe('Spoilers', function() {
     });
 
     // Test for editing a spoiler document, not associated with a part
-    it('should update an existing spoiler document', function(done) {
+    it('should update an existing spoiler document with no part association', function(done) {
         const updatedData = {
             title: 'Updated Test Spoiler',
             intensity: 'No Spoilers',
@@ -92,7 +89,7 @@ describe('Spoilers', function() {
     });
 
     // Test for deleting a spoiler document, not associated with a part
-    it('should delete an existing spoiler document', function(done) {
+    it('should delete an existing spoiler document with no part association', function(done) {
         chai.request(server)
             .delete(`/spoilers/${spoilerId}`)
             .set('Accept', 'application/json')
@@ -172,11 +169,11 @@ describe('Spoilers', function() {
     });
 
     // Still necessary to delete the media document created for these tests
+
     after(async function() {
         const res = await chai.request(server)
             .delete(`/media/${mediaId}`)
             .set('Accept', 'application/json');
-        console.log("Deleted Media ID:", mediaId);
     });
 
 });

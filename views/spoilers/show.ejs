@@ -9,15 +9,18 @@
   <p>Reference: <%= spoiler.reference %></p>
   <p>Media: <%= spoiler.media.title %></p>
   <%
-  let part;
-  for (let i = 0; i < spoiler.media.parts.length; i++) {
-    if (spoiler.media.parts[i]._id.toString() === spoiler.part.toString()) {
-      part = spoiler.media.parts[i];
-      break;
+  let part = null;
+  if (spoiler.part) {
+    for (let i = 0; i < spoiler.media.parts.length; i++) {
+      if (spoiler.media.parts[i]._id.toString() === spoiler.part.toString()) {
+        part = spoiler.media.parts[i];
+        break;
+      }
     }
   }
+  console.log(part);
   %>
-  <p>Part: <%= part ? part.title : 'Entire Media' %></p>
+  <p>Part: <%= part !== null ? part.title : 'Entire Media' %></p>
   <a href="/spoilers/<%= spoiler._id %>/edit">Edit</a>
   <form action="/spoilers/<%= spoiler._id %>?_method=DELETE" method="POST">
     <button type="submit">Delete</button>
