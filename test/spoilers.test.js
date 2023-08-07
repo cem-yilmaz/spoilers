@@ -136,7 +136,7 @@ describe('Spoilers', function() {
     });
 
     // Test for editing a spoiler document, associated with a part
-    it('should update an existing spoiler document', function(done) {
+    it('should update an existing spoiler document with a part associtation', function(done) {
         const updatedData = {
             title: 'Updated Test Spoiler with part attached',
             intensity: 'No Spoilers',
@@ -158,7 +158,7 @@ describe('Spoilers', function() {
     });
 
     // Test for deleting a spoiler document, associated with a part
-    it('should delete an existing spoiler document', function(done) {
+    it('should delete an existing spoiler document with a part associtation', function(done) {
         chai.request(server)
             .delete(`/spoilers/${spoilerId}`)
             .set('Accept', 'application/json')
