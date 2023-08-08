@@ -1,5 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const mongoose = require('mongoose');
 const server = require('../app');
 const expect = chai.expect;
 
@@ -216,4 +217,11 @@ describe('Media', function() {
                 done();
             });
     });
+});
+
+after(function(done) {
+    // Close the database connection
+    mongoose.connection.close()
+        .then(() => done())
+        .catch(err => done(err));
 });

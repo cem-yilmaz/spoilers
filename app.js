@@ -67,7 +67,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
   useUnifiedTopology: true,
   serverSelectionTimeoutMS: 5000, // Timeout after 5s
   socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-  keepAlive: true,
+  // keepAlive: true,
 })
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('Could not connect to MongoDB:', err));
