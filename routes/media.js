@@ -47,6 +47,7 @@ router.get('/:id/edit', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const mediaItem = await Media.findById(req.params.id);
+    if (!mediaItem) return res.status(404).json({ error: 'Media not found' });
     
     // Check if the request accepts JSON, and send JSON if so
     if (req.get('Accept') === 'application/json') {
@@ -114,7 +115,8 @@ router.post('/', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    await Media.findByIdAndRemove(req.params.id);
+    const deletedSuccessfully = await Media.findByIdAndRemove(req.params.id);
+    if (!deletedSuccessfully) return res.status(404).json({ error: 'Media not found' });
     res.redirect('/media');
   } catch (err) {
     console.log(err);
@@ -125,12 +127,27 @@ router.delete('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    //console.log(req.body);
     let mediaItem = await Media.findById(req.params.id);
+    
+    if (!mediaItem) {
+      return res.status(404).json({ error: 'Media not found' });
+    }
 
+    // Validate the type field
+    if (!req.body.type || !['Video Game', 'TV Show', 'Film', 'Book', 'Sporting Event', 'Other'].includes(req.body.type)) {
+      return res.status(400).json({ error: 'Invalid type' });
+    }
+
+    // Validate the parts field
     let parts = [];
-    for (let i = 0; req.body[`parts[${i}]`]; i++) {
-      parts.push({ title: req.body[`parts[${i}]`] });
+    if (req.body.parts) {
+      if (!Array.isArray(req.body.parts) || req.body.parts.some(part => typeof part.title !== 'string')) {
+        return res.status(400).json({ error: 'Invalid parts format' });
+      }
+
+      for (let i = 0; i < req.body.parts.length; i++) {
+        parts.push({ title: req.body.parts[i].title });
+      }
     }
 
     mediaItem.title = req.body.title;
@@ -142,11 +159,13 @@ router.put('/:id', async (req, res) => {
     if (req.get('Accept') === 'application/json') {
       return res.status(200).json(savedMedia);
     }
+
     res.redirect(`/media/${mediaItem.id}`);
   } catch (err) {
     console.log(err);
-    res.redirect('/media');
+    res.status(500).json(err);
   }
 });
+
 
 module.exports = router;

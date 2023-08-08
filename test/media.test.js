@@ -29,6 +29,16 @@ describe('Media', function() {
             });
     });
 
+    // Test for the unsuccessful reading of a media document, due to invalid ID
+    it('should return 404 Not Found for GETting an invalid ID', function(done) {
+        chai.request(server)
+            .get('/media/123456789012345678901234')
+            .set('Accept', 'application/json')
+            .end(function(err, res) {
+                expect(res).to.have.status(404);
+                done();
+            });
+    });
     // Test for the successful reading of a media document
     it('should read an existing media document', function(done) {
         chai.request(server)
@@ -82,16 +92,6 @@ describe('Media', function() {
             });
     });
 
-    // Test for the successful deletion of a media document
-    it('should delete an existing media document', function(done) {
-        chai.request(server)
-            .delete(`/media/${mediaId}`)
-            .end(function(err, res) {
-                expect(res).to.have.status(200);
-                done();
-            });
-    });
-
     // Tests for invalid POST requests
     it('should return 400 Bad Request if type field is missing', function(done) {
         const mediaData = {
@@ -109,7 +109,6 @@ describe('Media', function() {
                 done();
             });
     });
-    
     it('should return 400 Bad Request if type field has an invalid value', function(done) {
         const mediaData = {
             title: 'Test Media',
@@ -127,7 +126,6 @@ describe('Media', function() {
                 done();
             });
     });    
-
     it('should return 400 Bad Request if parts field has an invalid format', function(done) {
         const mediaData = {
             title: 'Test Media',
@@ -145,5 +143,77 @@ describe('Media', function() {
                 done();
             });
     });
-    
+
+    // Tests for invalid PUT requests
+    it('should return 404 if media ID does not exist', function(done) {
+        const updatedData = {
+            title: 'Updated Test Media',
+            type: 'Other',
+            parts: [{ title: 'Updated Part 1' }, { title: 'Updated Part 2' }]
+        };
+
+        chai.request(server)
+            .put('/media/123456789012345678901234')
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(404);
+                expect(res.body).to.have.property('error', 'Media not found');
+                done();
+            });
+    });
+    it('should return 400 for invalid type', function(done) {
+        const updatedData = {
+            title: 'Updated Test Media',
+            type: 'InvalidType',
+            parts: [{ title: 'Updated Part 1' }, { title: 'Updated Part 2' }]
+        };
+
+        chai.request(server)
+            .put(`/media/${mediaId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                expect(res.body).to.have.property('error', 'Invalid type');
+                done();
+            });
+    });
+    it('should return 400 for invalid parts format', function(done) {
+        const updatedData = {
+            title: 'Updated Test Media',
+            type: 'Other',
+            parts: 'InvalidPartsFormat'
+        };
+
+        chai.request(server)
+            .put(`/media/${mediaId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                expect(res.body).to.have.property('error', 'Invalid parts format');
+                done();
+            });
+    }); 
+
+    // Test for invalid deletion of a media document
+    it('should return 404 if media ID to delete does not exist', function(done) {
+        chai.request(server)
+            .delete('/media/123456789012345678901234')
+            .end(function(err, res) {
+                expect(res).to.have.status(404);
+                expect(res.body).to.have.property('error', 'Media not found');
+                done();
+            });
+    });
+    // Test for the successful deletion of a media document
+    it('should delete an existing media document', function(done) {
+        chai.request(server)
+            .delete(`/media/${mediaId}`)
+            .end(function(err, res) {
+                expect(res).to.have.status(200);
+                done();
+            });
+    });
 });
