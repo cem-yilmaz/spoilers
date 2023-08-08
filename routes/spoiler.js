@@ -63,6 +63,7 @@ router.get('/:id/edit', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const spoiler = await Spoiler.findById(req.params.id).populate('media');
+    if (!spoiler) return res.status(404).send('Spoiler not found.');
     // Test compatability
     if (req.get('Accept') === 'application/json') {
       return res.status(200).json(spoiler);
@@ -87,6 +88,16 @@ router.get('/media/:mediaId/parts', async (req, res) => {
 // Create a new spoiler
 router.post('/', async (req, res) => {
   const partId = req.body.part && req.body.part.trim() !== '' ? req.body.part : null;
+
+  // If mediaId is not in the database, return an error and status 400
+  const mediaFound = await Media.findById(req.body.mediaId);
+  if (!mediaFound) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Media not found',
+      errors: { mediaId: 'Media not found' }
+    });
+  }
 
   const newSpoiler = new Spoiler({
     title: req.body.title,

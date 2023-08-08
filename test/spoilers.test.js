@@ -32,6 +32,124 @@ describe('Spoilers', function() {
         partId = res.body.parts[0]._id;
     });
 
+    // Tests for invalid POST requests
+    it('should not create a new spoiler document with missing title', function(done) {
+        const spoilerData = {
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not create a new spoiler document with missing intensity', function(done) {
+        const spoilerData = {
+            title: 'Test Spoiler',
+            reference: 'Test Reference',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not create a new spoiler document with an invalid intensity', function(done) {
+        const spoilerData = {
+            title: 'Test Spoiler',
+            intensity: 'Invalid Intensity',
+            reference: 'Test Reference',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not create a new spoiler document with missing reference', function(done) {
+        const spoilerData = {
+            title: 'Test Spoiler',
+            intensity: 'No Spoilers',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not create a new spoiler document without associating it with a media', function(done) {
+        const spoilerData = {
+            title: 'Test Spoiler',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference'
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not create a new spoiler document with an invalid media ID', function(done) {
+        const spoilerData = {
+            title: 'Test Spoiler',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: 'Invalid Media ID'
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not create a new spoiler document with an invalid part ID', function(done) {
+        const spoilerData = {
+            title: 'Test Spoiler',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: mediaId,
+            part: 'Invalid Part ID'
+        };
+
+        chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    
     // Test for the successful creation of a spoiler document, not associated with a part
     it('should create a new spoiler document with no part associtation', function(done) {
         const spoilerData = {

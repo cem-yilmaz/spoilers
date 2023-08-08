@@ -17,7 +17,7 @@ const SpoilerSchema = new mongoose.Schema({
   },
   media: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Media'
+    ref: 'Media',
   },
   urls: [{
     type: mongoose.Schema.Types.ObjectId,
