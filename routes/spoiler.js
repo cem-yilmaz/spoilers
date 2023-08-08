@@ -147,6 +147,37 @@ router.put('/:id', async (req, res) => {
     spoiler.media = req.body.mediaId;
     spoiler.part = partId;
 
+    // Validate the updated spoiler
+    const validationError = spoiler.validateSync();
+    if (validationError) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Validation failed',
+        errors: validationError.errors
+      });
+    }
+
+    // Ensure the mediaId is valid
+    // Also ensure the part Id, if not null, is actually a part of the media
+    if (partId) {
+      const media = await Media.findById(req.body.mediaId);
+      if (!media) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Validation failed',
+          errors: { media: 'Media not found' }
+        });
+      } else {
+        if (!media.parts.includes(partId) && media.parts.length > 0) {
+          return res.status(400).json({
+            status: 'error',
+            message: 'Validation failed',
+            errors: { part: 'Part is not part of the media' }
+          });
+        }
+      }
+    }
+
     await spoiler.save();
     // Test compatability
     if (req.get('Accept') === 'application/json') {

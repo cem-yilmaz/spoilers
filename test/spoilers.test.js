@@ -185,6 +185,107 @@ describe('Spoilers', function() {
             });
     });
 
+    // Tests for invalid PUT requests
+    it('should not update an existing spoiler document with missing title', function(done) {
+        const updatedData = {
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .put(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not update an existing spoiler document with missing intensity', function(done) {
+        const updatedData = {
+            title: 'Updated Test Spoiler',
+            reference: 'Test Reference',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .put(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not update an existing spoiler document with missing reference', function(done) {
+        const updatedData = {
+            title: 'Updated Test Spoiler',
+            intensity: 'No Spoilers',
+            media: mediaId
+        };
+
+        chai.request(server)
+            .put(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not update an existing spoiler document with a missing media association', function(done) {
+        const updatedData = {
+            title: 'Updated Test Spoiler',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference'
+        };
+
+        chai.request(server)
+            .put(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not update an existing spoiler document with an invalid media ID', function(done) {
+        const updatedData = {
+            title: 'Updated Test Spoiler',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: 'Invalid Media ID'
+        };
+
+        chai.request(server)
+            .put(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+    it('should not update an existing spoiler document with an invalid part ID', function(done) {
+        const updatedData = {
+            title: 'Updated Test Spoiler',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            media: mediaId,
+            part: 'Invalid Part ID'
+        };
+
+        chai.request(server)
+            .put(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json')
+            .send(updatedData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+
     // Test for editing a spoiler document, not associated with a part
     it('should update an existing spoiler document with no part association', function(done) {
         const updatedData = {
