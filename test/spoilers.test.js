@@ -223,7 +223,7 @@ describe('Spoilers', function() {
             title: 'Test Spoiler with part attached',
             intensity: 'No Spoilers',
             reference: 'Test Reference',
-            media: mediaId,
+            mediaId: mediaId,
             part: partId
         };
 
