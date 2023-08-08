@@ -70,12 +70,23 @@ router.get('/:id', async (req, res) => {
 
 
 router.post('/', async (req, res) => {
+  // Validate the type field
+  if (!req.body.type || !['Video Game', 'TV Show', 'Film', 'Book', 'Sporting Event', 'Other'].includes(req.body.type)) {
+    return res.status(400).json({ error: 'Invalid type' });
+  }
+
+  // Validate the parts field
   let parts = [];
   if (req.body.parts) {
+    if (!Array.isArray(req.body.parts) || req.body.parts.some(part => typeof part.title !== 'string')) {
+      return res.status(400).json({ error: 'Invalid parts format' });
+    }
+
     for (let i = 0; i < req.body.parts.length; i++) {
       parts.push({ title: req.body.parts[i].title });
     }
   }
+
   const newMedia = new Media({
     title: req.body.title,
     type: req.body.type,
@@ -86,7 +97,7 @@ router.post('/', async (req, res) => {
 
   try {
     const savedMedia = await newMedia.save();
-    
+
     // If the request accepts JSON, send the savedMedia as the response
     if (req.get('Accept') === 'application/json') {
       return res.status(200).json(savedMedia);
@@ -99,6 +110,7 @@ router.post('/', async (req, res) => {
     res.status(500).json(err);
   }
 });
+
 
 router.delete('/:id', async (req, res) => {
   try {

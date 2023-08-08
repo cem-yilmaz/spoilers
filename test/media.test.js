@@ -91,4 +91,59 @@ describe('Media', function() {
                 done();
             });
     });
+
+    // Tests for invalid POST requests
+    it('should return 400 Bad Request if type field is missing', function(done) {
+        const mediaData = {
+            title: 'Test Media',
+            parts: [{ title: 'Part 1' }, { title: 'Part 2' }]
+        };
+    
+        chai.request(server)
+            .post('/media')
+            .set('Accept', 'application/json')
+            .send(mediaData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                expect(res.body).to.have.property('error', 'Invalid type');
+                done();
+            });
+    });
+    
+    it('should return 400 Bad Request if type field has an invalid value', function(done) {
+        const mediaData = {
+            title: 'Test Media',
+            type: 'InvalidType',
+            parts: [{ title: 'Part 1' }, { title: 'Part 2' }]
+        };
+    
+        chai.request(server)
+            .post('/media')
+            .set('Accept', 'application/json')
+            .send(mediaData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                expect(res.body).to.have.property('error', 'Invalid type');
+                done();
+            });
+    });    
+
+    it('should return 400 Bad Request if parts field has an invalid format', function(done) {
+        const mediaData = {
+            title: 'Test Media',
+            type: 'Other',
+            parts: 'InvalidPartsFormat'
+        };
+    
+        chai.request(server)
+            .post('/media')
+            .set('Accept', 'application/json')
+            .send(mediaData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                expect(res.body).to.have.property('error', 'Invalid parts format');
+                done();
+            });
+    });
+    
 });
