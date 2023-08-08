@@ -126,4 +126,15 @@ describe('URLs', function() {
             });
     });
 
+    // We delete the media document and the associated spoiler document after the tests are done
+    after(async function() {
+        let res = await chai.request(server)
+            .delete(`/media/${mediaId}`)
+            .set('Accept', 'application/json');
+
+        res = await chai.request(server)
+            .delete(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json');
+    });
+
 });
