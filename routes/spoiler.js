@@ -168,7 +168,9 @@ router.put('/:id', async (req, res) => {
           errors: { media: 'Media not found' }
         });
       } else {
-        if (!media.parts.includes(partId) && media.parts.length > 0) {
+        // Check if the partId matches any _id in media.parts
+        const partExistsInMedia = media.parts.some(part => part._id.toString() === partId);
+        if (!partExistsInMedia && media.parts.length > 0) {
           return res.status(400).json({
             status: 'error',
             message: 'Validation failed',
