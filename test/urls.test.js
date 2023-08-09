@@ -5,6 +5,8 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
+
+
 describe('URLs', function() {
     let mediaId;    // will be used to store the ID of the associated media document
     let partId;     // will be used to store the ID of the part associated with the spoiler document, from the media document
@@ -51,6 +53,60 @@ describe('URLs', function() {
         }
     });
 
+    // Tests for invalid POST requests
+    it('should fail to create a new URL document with missing fields', function(done) {
+        const urlData = {
+          media: mediaId,
+          spoiler: spoilerId,
+          description: 'Test URL'
+        };
+      
+        chai.request(server)
+          .post('/urls')
+          .set('Accept', 'application/json')
+          .send(urlData)
+          .end(function(err, res) {
+            expect(res).to.have.status(400);
+            expect(res.body).to.have.property('message', 'Validation failed');
+            expect(res.body.errors).to.have.property('url');
+            done();
+          });
+    });
+    it('should fail to create a new URL document with invalid media ID', function(done) {
+        const urlData = {
+          url: 'https://www.testurl.com',
+          media: 'invalid-media-id',
+          spoiler: spoilerId,
+          description: 'Test URL'
+        };
+      
+        chai.request(server)
+          .post('/urls')
+          .set('Accept', 'application/json')
+          .send(urlData)
+          .end(function(err, res) {
+            expect(res).to.have.status(400); // or other appropriate error code
+            done();
+          });
+    });
+    it('should fail to create a new URL document with invalid spoiler ID', function(done) {
+        const urlData = {
+            url: 'https://www.testurl.com',
+            media: mediaId,
+            spoiler: 'invalid-spoiler-id',
+            description: 'Test URL'
+        };
+        
+        chai.request(server)
+            .post('/urls')
+            .set('Accept', 'application/json')
+            .send(urlData)
+            .end(function(err, res) {
+                expect(res).to.have.status(400);
+                done();
+            });
+    });
+
     // Test for the successful creation of a URL document
     it('should create a new URL document', function(done) {
         const urlData = {
@@ -73,6 +129,17 @@ describe('URLs', function() {
             });
     });
 
+    // Test for invalid GET request
+    it('should return 404 when GETting a non-existent URL', function(done) {
+        chai.request(server)
+          .get('/urls/nonexistentid')
+          .set('Accept', 'application/json')
+          .end(function(err, res) {
+            expect(res).to.have.status(404);
+            done();
+          });
+    });
+
     // Test for the successful reading of a URL document
     it('should read an existing URL document', function(done) {
         chai.request(server)
@@ -84,6 +151,25 @@ describe('URLs', function() {
                 expect(res.body).to.have.property('_id', urlId);
                 done();
             });
+    });
+
+    // Test for invalid PUT request
+    it('should return 404 when updating a non-existent URL', function(done) {
+        const updatedData = {
+          url: 'https://www.updatedurl.com',
+          media: mediaId,
+          spoiler: spoilerId,
+          description: 'Updated URL'
+        };
+      
+        chai.request(server)
+          .put('/urls/nonexistentid')
+          .set('Accept', 'application/json')
+          .send(updatedData)
+          .end(function(err, res) {
+            expect(res).to.have.status(404);
+            done();
+          });
     });
 
     // Test for editing a URL document
@@ -114,6 +200,16 @@ describe('URLs', function() {
             });
     });
 
+    // Test for invalid DELETE request
+    it('should return 404 when deleting a non-existent URL', function(done) {
+        chai.request(server)
+            .delete('/urls/nonexistentid')
+            .set('Accept', 'application/json')
+            .end(function(err, res) {
+                expect(res).to.have.status(404);
+                done();
+            });
+    });
 
     // Test for deleting a URL document
     it('should delete an existing URL document', function(done) {
@@ -136,5 +232,4 @@ describe('URLs', function() {
             .delete(`/spoilers/${spoilerId}`)
             .set('Accept', 'application/json');
     });
-
 });

@@ -53,6 +53,16 @@ router.get('/:id/edit', async (req, res) => {
 
 // Update URL
 router.put('/:id', async (req, res) => {
+  // Return 404 if URL not found
+  console.log("finding url");
+  const found = await URL.findById(req.params.id);
+  console.log("found: ", found);
+  if (!found) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'URL not found'
+    });
+  }
   await URL.findByIdAndUpdate(req.params.id, req.body);
   // Test compatability
   if (req.get('Accept') === 'application/json') {
@@ -65,13 +75,21 @@ router.put('/:id', async (req, res) => {
 
 // Delete URL
 router.delete('/:id', async (req, res) => {
-  await URL.findByIdAndDelete(req.params.id);
-  // Test compatability
-  if (req.get('Accept') === 'application/json') {
-    return res.status(200).send();
-    // No 404 status code implementation as of yet
+  const found = await URL.findById(req.params.id);
+  if (!found) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'URL not found'
+    });
+  } else {
+    await URL.findByIdAndDelete(req.params.id);
+    // Test compatability
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).send();
+      // No 404 status code implementation as of yet
+    }
+    res.redirect('/urls');
   }
-  res.redirect('/urls');
 });
 
 // List URLs
@@ -82,12 +100,36 @@ router.get('/', async (req, res) => {
 
 // Show URL
 router.get('/:id', async (req, res) => {
-  const url = await URL.findById(req.params.id).populate('media').populate('spoiler');
-  // Test compatability
-  if (req.get('Accept') === 'application/json') {
-    return res.status(200).json(url);
+  console.log("Attempting to GET url with id: ", req.params.id);
+
+  try {
+    const url = await URL.findById(req.params.id);
+
+    // Return 404 if URL not found
+    if (!url) {
+      console.log("URL not found");
+      return res.status(404).json({
+        status: 'error',
+        message: 'URL not found'
+      });
+    }
+
+    // If URL is found, populate the related fields
+    await url.populate('media').populate('spoiler').execPopulate();
+
+    // Test compatibility
+    if (req.get('Accept') === 'application/json') {
+      return res.status(200).json(url);
+    }
+    res.render('urls/show', { url });
+  } catch (error) {
+    console.error("Error while getting URL:", error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Internal Server Error'
+    });
   }
-  res.render('urls/show', { url });
 });
+
 
 module.exports = router;
