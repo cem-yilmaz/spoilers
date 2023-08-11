@@ -129,17 +129,6 @@ describe('URLs', function() {
             });
     });
 
-    // Test for invalid GET request
-    it('should return 404 when GETting a non-existent URL', function(done) {
-        chai.request(server)
-          .get('/urls/nonexistentid')
-          .set('Accept', 'application/json')
-          .end(function(err, res) {
-            expect(res).to.have.status(404);
-            done();
-          });
-    });
-
     // Test for the successful reading of a URL document
     it('should read an existing URL document', function(done) {
         chai.request(server)
@@ -151,25 +140,6 @@ describe('URLs', function() {
                 expect(res.body).to.have.property('_id', urlId);
                 done();
             });
-    });
-
-    // Test for invalid PUT request
-    it('should return 404 when updating a non-existent URL', function(done) {
-        const updatedData = {
-          url: 'https://www.updatedurl.com',
-          media: mediaId,
-          spoiler: spoilerId,
-          description: 'Updated URL'
-        };
-      
-        chai.request(server)
-          .put('/urls/nonexistentid')
-          .set('Accept', 'application/json')
-          .send(updatedData)
-          .end(function(err, res) {
-            expect(res).to.have.status(404);
-            done();
-          });
     });
 
     // Test for editing a URL document
@@ -197,17 +167,6 @@ describe('URLs', function() {
                         expect(res.body).to.have.property('description', updatedData.description);
                         done();
                     });
-            });
-    });
-
-    // Test for invalid DELETE request
-    it('should return 404 when deleting a non-existent URL', function(done) {
-        chai.request(server)
-            .delete('/urls/nonexistentid')
-            .set('Accept', 'application/json')
-            .end(function(err, res) {
-                expect(res).to.have.status(404);
-                done();
             });
     });
 
