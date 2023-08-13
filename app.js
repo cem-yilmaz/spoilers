@@ -46,13 +46,9 @@ app.get('/', async (req, res) => {
   res.render('index', { title: 'Spoiler Wiki', mediaList });
 });
 
-// Set up our media routes
+// Set up routes
 app.use('/media', mediaRoutes);
-
-// Set up our spoiler routes
 app.use('/spoilers', spoilerRoutes);
-
-// Set up our URL routes
 app.use('/urls', URLRoutes);
 
 // Start the server - FUNCTIONALITY MOVED TO server.js
