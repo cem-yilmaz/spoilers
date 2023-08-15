@@ -1,0 +1,10 @@
+.collapsible h2 {
+    cursor: pointer;
+  }
+  
+  .collapsible .content {
+    display: none; /* Hide content by default */
+    padding: 10px;
+  }
+  
+  /* Add more styling as needed */  
