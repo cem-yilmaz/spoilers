@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded!'); // DEBUG
     const trackedMediaList = document.getElementById('trackedMediaList');
     const clearAllButton = document.getElementById('clearAll');
+	const newMediaInput = document.getElementById('newMedia');
+	const addMediaButton = document.getElementById('addMediaButton');
   
     // Function to display tracked media
     function displayTrackedMedia() {
@@ -30,6 +32,21 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		});
     }
+
+	// Function to add tracked media
+	function addTrackedMedia() {
+		const media = newMediaInput.value;	
+		if (media) { // If media is not empty
+			chrome.storage.local.get(['trackedMedia'], (result) => {
+				const mediaList = result.trackedMedia || [];
+				mediaList.push(media);
+				chrome.storage.local.set({ trackedMedia: mediaList }, () => {
+					displayTrackedMedia(); // Refresh display
+					newMediaInput.value = ''; // Clear input field
+				});
+			});
+		}
+	}
   
     // Clear all tracked media
     clearAllButton.addEventListener('click', () => {
@@ -37,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
 			displayTrackedMedia();
 		});
     });
+
+	// Add new tracked media
+	addMediaButton.addEventListener('click', addTrackedMedia);
   
     // Initialize tracked media if empty
     chrome.storage.local.get(['trackedMedia'], (result) => {

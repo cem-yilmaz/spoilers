@@ -1,10 +1,19 @@
 .collapsible h2 {
     cursor: pointer;
-  }
+}
   
-  .collapsible .content {
+.collapsible .content {
     display: none; /* Hide content by default */
     padding: 10px;
-  }
+}
   
-  /* Add more styling as needed */  
+label {
+    display: inline-block;
+    width: 100px;
+    margin-right: 10px;
+}
+
+input[type="text"] {
+	width: 200px;
+	margin-right: 10px;
+}
