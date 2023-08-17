@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const expressLayouts = require('express-ejs-layouts');
 const methodOverride = require('method-override');
@@ -20,6 +21,9 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Set up express-ejs-layouts
 app.use(expressLayouts);
+
+// Enable all CORS requests
+app.use(cors());
 
 // Set the layout file
 app.set('layout', 'layout');

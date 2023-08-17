@@ -3,7 +3,13 @@ const router = express.Router();
 const Media = require('../models/media');
 
 router.get('/', async (req, res) => {
+  console.log('Get type:', req.get('Accept'));
   const mediaList = await Media.find({});
+  // If the request accepts JSON, send the mediaList as the response
+  if (req.get('Accept') === 'application/json') {
+    console.log('Sending JSON');
+    return res.json(mediaList);
+  }
   res.render('media/index', { media: mediaList, title: 'Media List' });
 });
 
