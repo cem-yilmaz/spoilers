@@ -4,7 +4,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearAllButton = document.getElementById('clearAll');
 	const newMediaInput = document.getElementById('newMedia');
 	const addMediaButton = document.getElementById('addMediaButton');
-  
+
+	const mediaSearchInput = document.getElementById('mediaSearch');
+	const mediaResultsDiv = document.getElementById('mediaResults');
+
+	function searchMedia() {
+		const query = mediaSearchInput.value;
+		chrome.runtime.sendMessage({ action: 'searchMedia', query: query }, (response) => {
+			renderMediaResults(response);
+		});
+	}
+
+	function renderMediaResults(mediaList) {
+		mediaResultsDiv.innerHTML = '';
+		mediaList.slice(0, 5).forEach(media => {
+			const mediaItem = document.createElement('div');
+			// switch statement to determine media type emoji
+			mediaItem.textContent = '💿';
+			switch (media.type) {
+				case 'Video Game':
+					mediaItem.textContent = '🕹️';
+					break;
+				case 'TV Show':
+					mediaItem.textContent = '📺';
+					break;
+				case 'Film':
+					mediaItem.textContent = '🎬';
+					break;
+				case 'Book':
+					mediaItem.textContent = '📖';
+					break;
+				case 'Sporting Event':
+					mediaItem.textContent = '⚽';
+					break;
+				default:
+					mediaItem.textContent = '💿';
+					break;
+			}
+			mediaItem.textContent += ` ${media.title}`; // Adding title text
+			mediaItem.addEventListener('click', () => addTrackedMedia(media.title));
+			mediaResultsDiv.appendChild(mediaItem);
+		});
+	}
+	
+
+	// Update filtered media
+	chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+		if (request.action === "searchMedia") {
+			const query = request.query.toLowerCase();
+			const filteredMedia = mediaList.filter(media => media.title.toLowerCase().includes(query));
+			sendResponse(filteredMedia);
+		}
+	});
+	  
     // Function to display tracked media
     function displayTrackedMedia() {
 		chrome.storage.local.get(['trackedMedia'], (result) => {
@@ -34,19 +86,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 	// Function to add tracked media
-	function addTrackedMedia() {
-		const media = newMediaInput.value;	
-		if (media) { // If media is not empty
+	function addTrackedMedia(mediaTitle) {
+		if (mediaTitle) { // If media is not empty
 			chrome.storage.local.get(['trackedMedia'], (result) => {
 				const mediaList = result.trackedMedia || [];
-				mediaList.push(media);
+				mediaList.push(mediaTitle);
 				chrome.storage.local.set({ trackedMedia: mediaList }, () => {
 					displayTrackedMedia(); // Refresh display
-					newMediaInput.value = ''; // Clear input field
 				});
 			});
 		}
 	}
+	
   
     // Clear all tracked media
     clearAllButton.addEventListener('click', () => {
