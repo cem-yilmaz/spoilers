@@ -3,6 +3,7 @@ const router = express.Router();
 const Media = require('../models/media');
 
 router.get('/', async (req, res) => {
+  // Get all media
   const mediaList = await Media.find({});
   return res.json(mediaList);
 });
