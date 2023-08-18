@@ -3,14 +3,8 @@ const router = express.Router();
 const Media = require('../models/media');
 
 router.get('/', async (req, res) => {
-  console.log('Get type:', req.get('Accept'));
   const mediaList = await Media.find({});
-  // If the request accepts JSON, send the mediaList as the response
-  if (req.get('Accept') === 'application/json') {
-    console.log('Sending JSON');
-    return res.json(mediaList);
-  }
-  res.render('media/index', { media: mediaList, title: 'Media List' });
+  return res.json(mediaList);
 });
 
 router.get('/new', (req, res) => {
@@ -53,25 +47,14 @@ router.get('/:id/edit', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const mediaItem = await Media.findById(req.params.id);
-    if (!mediaItem) return res.status(404).json({ error: 'Media not found' });
-    
-    // Check if the request accepts JSON, and send JSON if so
-    if (req.get('Accept') === 'application/json') {
+    if (!mediaItem) {
+      return res.status(404).json({ error: 'Media not found' });
+    } else {
       return res.json(mediaItem);
     }
-
-    // Otherwise, render the view
-    res.render('media/show', { media: mediaItem, title: mediaItem.title });
   } catch (err) {
     console.error(err);
-    
-    // If the request accepts JSON, send the error as the response
-    if (req.get('Accept') === 'application/json') {
-      return res.status(500).json(err);
-    }
-
-    // Otherwise, do the redirect
-    res.redirect('/media');
+    return res.status(500).json(err);
   }
 });
 
@@ -104,17 +87,10 @@ router.post('/', async (req, res) => {
 
   try {
     const savedMedia = await newMedia.save();
-
-    // If the request accepts JSON, send the savedMedia as the response
-    if (req.get('Accept') === 'application/json') {
-      return res.status(200).json(savedMedia);
-    }
-
-    // Otherwise, do the redirect
-    res.redirect('/media');
+    return res.status(200).json(savedMedia);
   } catch (err) {
     console.error(err);
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
@@ -123,7 +99,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const deletedSuccessfully = await Media.findByIdAndRemove(req.params.id);
     if (!deletedSuccessfully) return res.status(404).json({ error: 'Media not found' });
-    res.redirect('/media');
+    return res.status(200).json({ success: 'Media deleted successfully' });
   } catch (err) {
     console.log(err);
     res.redirect('/media');
@@ -160,13 +136,7 @@ router.put('/:id', async (req, res) => {
     mediaItem.type = req.body.type;
     mediaItem.parts = parts;
     const savedMedia = await mediaItem.save();
-
-    // If the request accepts JSON, send the savedMedia as the response
-    if (req.get('Accept') === 'application/json') {
-      return res.status(200).json(savedMedia);
-    }
-
-    res.redirect(`/media/${mediaItem.id}`);
+    return res.status(200).json(savedMedia);
   } catch (err) {
     console.log(err);
     res.status(500).json(err);
