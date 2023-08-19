@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
                     ${getMediaEmoji(media.type)} <strong>${media.title}</strong> | ${media.sensitivity} | ${media.status}
-                    <ul><li>Blocking for ${media.parts.join(', ')} [Edit]</li></ul>
+                    <ul><li>Blocking for ${media.parts && media.parts.length > 0 ? media.parts.join(', ') : 'Entire Media'} [Edit]</li></ul>
                 `; // Assuming media has type, sensitivity, and status
                 const removeButton = document.createElement('button');
                 removeButton.textContent = 'Remove';
