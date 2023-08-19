@@ -1,4 +1,15 @@
+let allMedia = [];
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Load all media on page load
+    chrome.runtime.sendMessage({ action: 'searchMedia', query: '' }, (response) => {
+        if (response) {
+            allMedia = response; // Store all media
+        } else {
+            console.error('No response received from background script');
+        }
+    });
+
     const trackedMediaList = document.getElementById('trackedMediaList');
     const mediaSearchInput = document.getElementById('mediaSearch');
     const mediaResultsDiv = document.getElementById('mediaResults');
@@ -17,13 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         console.log(`Searching for media containing query: '${query}'`); //DEBUG
-        chrome.runtime.sendMessage({ action: 'searchMedia', query: query }, (response) => {
-            if (response) {
-                renderMediaResults(response);
-            } else {
-                console.error('No response received from background script');
-            }
-        });
+        const filteredMedia = allMedia.filter(media => media.title.toLowerCase().includes(query.toLowerCase()));
+        renderMediaResults(filteredMedia);
     }
 
     function renderMediaResults(mediaList) {
