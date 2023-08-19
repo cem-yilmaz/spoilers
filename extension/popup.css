@@ -17,3 +17,12 @@ input[type="text"] {
 	width: 200px;
 	margin-right: 10px;
 }
+
+.media-item {
+    cursor: pointer;
+    padding: 5px;
+}
+
+.media-item:hover {
+    background-color: #2437db;
+}

@@ -6,11 +6,17 @@ document.addEventListener('DOMContentLoaded', () => {
     displayTrackedMedia();
 
     if (mediaSearchInput) {
-        mediaSearchInput.addEventListener('keyup', searchMedia);
+        mediaSearchInput.addEventListener('input', searchMedia);
     }
 
     function searchMedia() {
+        console.log('KeyUp event triggered'); //DEBUG
         const query = mediaSearchInput.value.trim();
+        if (query.length === 0) {
+            mediaResultsDiv.innerHTML = '';
+            return;
+        }
+        console.log(`Searching for media containing query: '${query}'`); //DEBUG
         chrome.runtime.sendMessage({ action: 'searchMedia', query: query }, (response) => {
             if (response) {
                 renderMediaResults(response);
@@ -26,9 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        console.log('Media that contains this query:', mediaList); //DEBUG
+
         mediaResultsDiv.innerHTML = '';
         mediaList.slice(0, 5).forEach(media => {
             const mediaItem = document.createElement('div');
+            mediaItem.className = 'media-item';
             mediaItem.innerHTML = getMediaEmoji(media.type) + ` ${media.title}`;
             mediaItem.addEventListener('click', () => addTrackedMedia(media));
             mediaResultsDiv.appendChild(mediaItem);

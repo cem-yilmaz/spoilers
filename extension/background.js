@@ -16,6 +16,7 @@ function fetchMediaList(query = '') {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log('Message received in background:', message); //DEBUG
     if (message.action === 'searchMedia') {
         fetchMediaList(message.query)
         .then((data) => {
