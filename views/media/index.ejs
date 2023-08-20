@@ -3,7 +3,7 @@
 <ul>
   <% media.forEach((mediaItem) => { %>
     <li>
-      <a href="/media/<%= mediaItem._id %>"><%= mediaItem.title %></a>
+      <a href="/media/<%= mediaItem._id %>"><%= mediaItem.title %> (<%= mediaItem.year ? mediaItem.year : "NaN" %>)</a>
       (<%= mediaItem.type %>)
     </li>
   <% }); %>

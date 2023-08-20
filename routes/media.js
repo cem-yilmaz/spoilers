@@ -67,24 +67,21 @@ router.post('/', async (req, res) => {
   }
 
   // Validate the parts field
-  let parts = [];
-  if (req.body.parts) {
-    if (!Array.isArray(req.body.parts) || req.body.parts.some(part => typeof part.title !== 'string')) {
-      return res.status(400).json({ error: 'Invalid parts format' });
-    }
-
-    for (let i = 0; i < req.body.parts.length; i++) {
-      parts.push({ title: req.body.parts[i].title });
-    }
-  }
+  let parts = createParts(req.body);
 
   const newMedia = new Media({
     title: req.body.title,
     type: req.body.type,
+    year: req.body.year,
     parts,
     urls: [],
     spoilers: []
   });
+
+  // Check for duplicate media
+  if (isDuplicateMedia(newMedia)) {
+    return res.status(409).json({ error: 'Media already exists' });
+  }
 
   try {
     const savedMedia = await newMedia.save();
@@ -107,8 +104,24 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+function isDuplicateMedia(media) {
+  // Checks to see if a media with the same title, type, and year already exists
+  return Media.find({ title: media.title, type: media.type, year: media.year }).length > 0;
+}
+
+function createParts(requestBody) {
+  let parts = [];
+  if (requestBody.hasParts === 'on') {
+    for (let i = 0; i < requestBody.numParts; i++) {
+      parts.push({ title: requestBody[`parts[${i}]`] });
+    }
+  }
+  return parts;
+}
+
 
 router.put('/:id', async (req, res) => {
+  console.log("req.body: ", req.body); //DEBUG
   try {
     let mediaItem = await Media.findById(req.params.id);
     
@@ -122,20 +135,18 @@ router.put('/:id', async (req, res) => {
     }
 
     // Validate the parts field
-    let parts = [];
-    if (req.body.parts) {
-      if (!Array.isArray(req.body.parts) || req.body.parts.some(part => typeof part.title !== 'string')) {
-        return res.status(400).json({ error: 'Invalid parts format' });
-      }
-
-      for (let i = 0; i < req.body.parts.length; i++) {
-        parts.push({ title: req.body.parts[i].title });
-      }
-    }
+    let parts = createParts(req.body);
+    console.log("parts: ", parts); //DEBUG
 
     mediaItem.title = req.body.title;
     mediaItem.type = req.body.type;
     mediaItem.parts = parts;
+    mediaItem.year = req.body.year;
+
+    if (isDuplicateMedia(mediaItem)) {
+      return res.status(409).json({ error: 'Media already exists' });
+    }
+
     const savedMedia = await mediaItem.save();
     return res.status(200).json(savedMedia);
   } catch (err) {

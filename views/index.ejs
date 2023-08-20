@@ -16,7 +16,7 @@
   <a href="/urls">[URL]</a>
   <% mediaList.forEach(media => { %>
     <p>
-      <a href="/media/<%= media._id %>"><%= media.title %></a> (<%= media.type %>)
+      <a href="/media/<%= media._id %>"><%= media.title %></a> (<%= media.type %>) (<%= media.year ? media.year : "Err: No year entered" %>)
       <a href="/media/<%= media._id %>/edit">[Edit]</a>
       <a href="/media/<%= media._id %>?_method=DELETE">[Delete]</a>
     </p>
