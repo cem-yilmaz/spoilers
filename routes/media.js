@@ -110,6 +110,10 @@ function isDuplicateMedia(media) {
 }
 
 function createParts(requestBody) {
+  // Check that the parts field is valid
+  if (requestBody.hasParts === 'on' && !requestBody.numParts) {
+    return res.status(400).json({ error: 'Invalid parts format' });
+  }
   let parts = [];
   if (requestBody.hasParts === 'on') {
     for (let i = 0; i < requestBody.numParts; i++) {
@@ -121,7 +125,6 @@ function createParts(requestBody) {
 
 
 router.put('/:id', async (req, res) => {
-  console.log("req.body: ", req.body); //DEBUG
   try {
     let mediaItem = await Media.findById(req.params.id);
     
@@ -136,7 +139,6 @@ router.put('/:id', async (req, res) => {
 
     // Validate the parts field
     let parts = createParts(req.body);
-    console.log("parts: ", parts); //DEBUG
 
     mediaItem.title = req.body.title;
     mediaItem.type = req.body.type;
