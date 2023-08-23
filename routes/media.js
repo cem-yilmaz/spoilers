@@ -67,7 +67,8 @@ router.post('/', async (req, res) => {
   }
 
   // Validate the parts field
-  let parts = createParts(req.body);
+  let parts = createParts(req.body, res);
+  if (parts === null) return; //Could also do if (!parts) return;
 
   const newMedia = new Media({
     title: req.body.title,
@@ -109,10 +110,11 @@ function isDuplicateMedia(media) {
   return Media.find({ title: media.title, type: media.type, year: media.year }).length > 0;
 }
 
-function createParts(requestBody) {
+function createParts(requestBody, res) {
   // Check that the parts field is valid
   if (requestBody.hasParts === 'on' && !requestBody.numParts) {
-    return res.status(400).json({ error: 'Invalid parts format' });
+    res.status(400).json({ error: 'Invalid parts format' });
+    return null;
   }
   let parts = [];
   if (requestBody.hasParts === 'on') {
@@ -138,7 +140,8 @@ router.put('/:id', async (req, res) => {
     }
 
     // Validate the parts field
-    let parts = createParts(req.body);
+    let parts = createParts(req.body, res);
+    if (parts === null) return; //Could also do if (!parts) return;
 
     mediaItem.title = req.body.title;
     mediaItem.type = req.body.type;
