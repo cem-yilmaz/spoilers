@@ -19,6 +19,7 @@ describe('URLs', function() {
             title: 'Test Media',
             type: 'Other',
             hasParts: true,
+            numParts: 2,
             parts: [{ title: 'Part 1' }, { title: 'Part 2' }]
         };
 
@@ -27,13 +28,19 @@ describe('URLs', function() {
             .set('Accept', 'application/json')
             .send(mediaData);
 
+        console.log("Media POST response:", res.body); //DEBUG
         mediaId = res.body._id;
 
         res = await chai.request(server)
             .get(`/media/${mediaId}`)
             .set('Accept', 'application/json');
 
-        partId = res.body.parts[0]._id;
+        console.log("Media GET response:", res.body); //DEBUG
+        if (res.body.parts && res.body.parts.length > 0) {
+            partId = res.body.parts[0]._id;
+        } else {
+            throw new Error('Media document does not have any parts.');
+        }
 
         const spoilerData = {
             title: 'Test Spoiler',
@@ -47,6 +54,7 @@ describe('URLs', function() {
             .set('Accept', 'application/json')
             .send(spoilerData);
 
+        console.log("Spoiler POST response:", res.body); //DEBUG
         spoilerId = res.body._id;
 
         if (mediaId && partId && spoilerId) {

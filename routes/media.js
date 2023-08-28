@@ -86,8 +86,7 @@ router.post('/', async (req, res) => {
   if (isDuplicateMedia(newMedia)) {
     return res.status(409).json({ error: 'Media already exists' });
   }
-
-  console.log("Here is newMedia"); //DEBUG  
+  
   console.log(newMedia); //DEBUG
 
   try {
