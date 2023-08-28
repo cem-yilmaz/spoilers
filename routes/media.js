@@ -68,7 +68,6 @@ router.post('/', async (req, res) => {
 
   // Validate the parts field
   let parts = createParts(req.body, res);
-  console.log("Just made parts: ", parts); //DEBUG
   if (parts === null) {
     console.log("Its the parts the parts are fucky");
     return;
@@ -88,11 +87,14 @@ router.post('/', async (req, res) => {
     return res.status(409).json({ error: 'Media already exists' });
   }
 
+  console.log("Here is newMedia"); //DEBUG  
+  console.log(newMedia); //DEBUG
+
   try {
     const savedMedia = await newMedia.save();
     return res.status(200).json(savedMedia);
   } catch (err) {
-    console.error(err);
+    //console.error(err); //DEBUG
     return res.status(500).json(err);
   }
 });
@@ -137,7 +139,7 @@ function createParts(requestBody, res) {
 
   let parts = [];
   for (let i = 0; i < requestBody.numParts; i++) {
-    parts.push({ title: requestBody[`parts[${i}]`] });
+    parts.push({ title: requestBody.parts[i].title });
   }
   return parts;
 }
@@ -172,7 +174,7 @@ router.put('/:id', async (req, res) => {
     const savedMedia = await mediaItem.save();
     return res.status(200).json(savedMedia);
   } catch (err) {
-    console.log(err);
+    //console.log(err); //DEBUG
     res.status(500).json(err);
   }
 });

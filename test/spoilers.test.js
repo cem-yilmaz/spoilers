@@ -15,6 +15,8 @@ describe('Spoilers', function() {
         const mediaData = {
             title: 'Test Media',
             type: 'Other',
+            hasParts: true,
+            numParts: 2,
             parts: [{ title: 'Part 1' }, { title: 'Part 2' }]
         };
 
@@ -23,11 +25,27 @@ describe('Spoilers', function() {
             .set('Accept', 'application/json')
             .send(mediaData);
 
+        // Ensure that the media document was created successfully
+        if (!res.body || !res.body._id) {
+            throw new Error('Failed to create media for spoiler tests');
+        }
+
         mediaId = res.body._id;
 
         res = await chai.request(server)
             .get(`/media/${mediaId}`)
             .set('Accept', 'application/json');
+
+        // Ensure that parts exist in the retrieved media document
+        //if (!res.body || !res.body.parts || res.body.parts.length === 0) {
+        // Making more descriptive error messages
+        if (!res.body) {
+            throw new Error('Failed to retrieve media for spoiler tests: no body');
+        } else if (!res.body.parts) {
+            throw new Error('Failed to retrieve media for spoiler tests: no parts array');
+        } else if (res.body.parts.length === 0) {
+            throw new Error('Failed to retrieve media for spoiler tests: no parts in array');
+        }
 
         partId = res.body.parts[0]._id;
     });

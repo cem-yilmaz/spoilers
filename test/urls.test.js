@@ -18,6 +18,7 @@ describe('URLs', function() {
         const mediaData = {
             title: 'Test Media',
             type: 'Other',
+            hasParts: true,
             parts: [{ title: 'Part 1' }, { title: 'Part 2' }]
         };
 

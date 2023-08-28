@@ -169,6 +169,7 @@ describe('Media', function() {
         const updatedData = {
             title: 'Updated Test Media',
             type: 'InvalidType',
+            hasParts: true,
             parts: [{ title: 'Updated Part 1' }, { title: 'Updated Part 2' }]
         };
 
