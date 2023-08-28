@@ -68,7 +68,11 @@ router.post('/', async (req, res) => {
 
   // Validate the parts field
   let parts = createParts(req.body, res);
-  if (parts === null) return; //Could also do if (!parts) return;
+  console.log("Just made parts: ", parts); //DEBUG
+  if (parts === null) {
+    console.log("Its the parts the parts are fucky");
+    return;
+  }
 
   const newMedia = new Media({
     title: req.body.title,
@@ -111,16 +115,29 @@ function isDuplicateMedia(media) {
 }
 
 function createParts(requestBody, res) {
-  // Check that the parts field is valid
-  if (requestBody.hasParts === 'on' && !requestBody.numParts) {
-    res.status(400).json({ error: 'Invalid parts format' });
-    return null;
-  }
-  let parts = [];
-  if (requestBody.hasParts === 'on') {
-    for (let i = 0; i < requestBody.numParts; i++) {
-      parts.push({ title: requestBody[`parts[${i}]`] });
+  // Validate the parts field
+  if (requestBody.parts) {
+    // Validate that the parts field is an array
+    if (!Array.isArray(requestBody.parts)) {
+      return res.status(400).json({ error: 'Invalid parts format' });
+    } else { // We know the parts field is an array
+      // Validate each item in the parts array
+      for (const part of requestBody.parts) {
+        if (typeof part !== 'object' || !part.title || typeof part.title !== 'string') {
+          // Checking the following:
+          // 1. part is an object
+          // 2. part has a title field
+          // 3. part.title is a string
+          return res.status(400).json({ error: 'Invalid parts format' });
+        } // If we reach this point, the parts field is valid
+      } // We can then continue
     }
+  }
+
+
+  let parts = [];
+  for (let i = 0; i < requestBody.numParts; i++) {
+    parts.push({ title: requestBody[`parts[${i}]`] });
   }
   return parts;
 }

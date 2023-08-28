@@ -14,6 +14,7 @@ describe('Media', function() {
         const mediaData = {
             title: 'Test Media',
             type: 'Other',
+            hasParts: true,
             parts: [{ title: 'Part 1' }, { title: 'Part 2' }] // part of media document
         };
 
@@ -58,6 +59,7 @@ describe('Media', function() {
         const updatedData = {
             title: 'Updated Test Media',
             type: 'Other',
+            hasParts: true,
             parts: [{ title: 'Updated Part 1' }, { title: 'Updated Part 2' }] // updated parts
         };
 
