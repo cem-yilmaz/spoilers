@@ -62,10 +62,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addTrackedMedia(media) {
-        if (media) {
+        if (media) { //This is stupid and needs to be got rid of.
+            // addTrackedMedia should never be called with a null media.
             chrome.storage.local.get(['trackedMedia'], (result) => {
                 const mediaList = result.trackedMedia || [];
-                mediaList.push({ id: media.id, title: media.title, parts: media.parts }); // Assuming media has id and parts
+                const defaultSensitivity = 'No Spoilers';
+                // Defaulting to max spoiler sensitivity for now
+                mediaList.push(
+                    { id: media.id,
+                      title: media.title,
+                      type: media.type,
+                      year: media.year,
+                      parts: media.parts,
+                      sensitivity: defaultSensitivity,
+                      isNonLinear: false
+                    }); 
+                    // If it's non linear, the part selection will be an
+                    // array of checkboxes, otherwise it will be a dropdown
+                    // By implementing this now (with no option to change yet)
+                    // we can preserve the previous functionality of the
+                    // extension while still allowing for the new functionality
                 chrome.storage.local.set({ trackedMedia: mediaList }, () => {
                     displayTrackedMedia();
                 });
@@ -91,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mediaList.forEach((media, index) => {
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
-                    ${getMediaEmoji(media.type)} <strong>${media.title}</strong> | ${media.sensitivity} | ${media.status}
+                    ${getMediaEmoji(media.type)} <strong>${media.title}</strong> | ${media.year} | ${media.sensitivity}
                     <ul><li>Blocking for ${media.parts && media.parts.length > 0 ? media.parts.join(', ') : 'Entire Media'} [Edit]</li></ul>
                 `; // Assuming media has type, sensitivity, and status
                 const removeButton = document.createElement('button');
