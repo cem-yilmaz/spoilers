@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load all media on page load
     chrome.runtime.sendMessage({ action: 'searchMedia', query: '' }, (response) => {
         if (response) {
-            allMedia = response; // Store all media
+            allMedia = response;
         } else {
             console.error('No response received from background script');
         }
@@ -21,25 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function searchMedia() {
-        console.log('KeyUp event triggered'); //DEBUG
         const query = mediaSearchInput.value.trim();
         if (query.length === 0) {
             mediaResultsDiv.innerHTML = '';
             return;
         }
-        console.log(`Searching for media containing query: '${query}'`); //DEBUG
         const filteredMedia = allMedia.filter(media => media.title.toLowerCase().includes(query.toLowerCase()));
         renderMediaResults(filteredMedia);
     }
 
     function renderMediaResults(mediaList) {
-        if (!mediaList || !Array.isArray(mediaList)) {
-            console.error('Invalid media list received. mediaList:', mediaList);
-            return;
-        }
-
-        console.log('Media that contains this query:', mediaList); //DEBUG
-
         mediaResultsDiv.innerHTML = '';
         mediaList.slice(0, 5).forEach(media => {
             const mediaItem = document.createElement('div');
@@ -62,37 +53,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addTrackedMedia(media) {
-        if (media) { //This is stupid and needs to be got rid of.
-            // addTrackedMedia should never be called with a null media.
-            chrome.storage.local.get(['trackedMedia'], (result) => {
-                const mediaList = result.trackedMedia || [];
-                const defaultSensitivity = 'No Spoilers';
-                // Defaulting to max spoiler sensitivity for now
-                mediaList.push(
-                    { id: media.id,
-                      title: media.title,
-                      type: media.type,
-                      year: media.year,
-                      parts: media.parts,
-                      sensitivity: defaultSensitivity,
-                      isNonLinear: false
-                    }); 
-                    // If it's non linear, the part selection will be an
-                    // array of checkboxes, otherwise it will be a dropdown
-                    // By implementing this now (with no option to change yet)
-                    // we can preserve the previous functionality of the
-                    // extension while still allowing for the new functionality
-                chrome.storage.local.set({ trackedMedia: mediaList }, () => {
-                    displayTrackedMedia();
-                });
+        chrome.storage.local.get(['trackedMedia'], (result) => {
+            const mediaList = result.trackedMedia || [];
+            const defaultSensitivity = 'No Spoilers';
+            mediaList.push({
+                id: media.id,
+                title: media.title,
+                type: media.type,
+                year: media.year,
+                parts: media.parts,
+                sensitivity: defaultSensitivity,
+                isNonLinear: false,
+                currentPart: "Entire Media"
             });
-        }
+            chrome.storage.local.set({ trackedMedia: mediaList }, () => {
+                displayTrackedMedia();
+            });
+        });
     }
 
     function removeTrackedMedia(index) {
         chrome.storage.local.get(['trackedMedia'], (result) => {
             const mediaList = result.trackedMedia || [];
             mediaList.splice(index, 1);
+            chrome.storage.local.set({ trackedMedia: mediaList }, () => {
+                displayTrackedMedia();
+            });
+        });
+    }
+
+    function updateTrackedMedia(index, updatedMedia) {
+        chrome.storage.local.get(['trackedMedia'], (result) => {
+            const mediaList = result.trackedMedia || [];
+            mediaList[index] = updatedMedia;
             chrome.storage.local.set({ trackedMedia: mediaList }, () => {
                 displayTrackedMedia();
             });
@@ -106,28 +99,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
             mediaList.forEach((media, index) => {
                 const listItem = document.createElement('li');
-
-                // Extract part titles from media.parts
-                const partTitles = media.parts && media.parts.length > 0 ? media.parts.map(part => part.title) : "Entire Media";
-
+                const partTitles = media.parts ? media.parts.map(part => part.title) : ['Entire Media'];
+                const selectedPart = media.currentPart || "Entire Media";
+                
                 listItem.innerHTML = `
                     ${getMediaEmoji(media.type)} <strong>${media.title}</strong> | ${media.year} | ${media.sensitivity}
-                    <ul><li>Blocking for ${partTitles} [Edit]</li></ul>
-                `; // Assuming media has type, sensitivity, and status
+                    <ul><li id="info-${index}">Blocking from ${selectedPart} onwards [<span class="edit-button" id="edit-${index}">Edit</span>]</li></ul>
+                `;
+
                 const removeButton = document.createElement('button');
                 removeButton.textContent = 'Remove';
                 removeButton.addEventListener('click', () => removeTrackedMedia(index));
                 listItem.appendChild(removeButton);
+
+                document.getElementById(`edit-${index}`).addEventListener('click', () => {
+                    const li = document.getElementById(`info-${index}`);
+                    const sensitivities = ['No Spoilers', 'Major Spoilers'];
+                    
+                    const sensitivityDropdown = document.createElement('select');
+                    sensitivities.forEach(sens => {
+                        const option = document.createElement('option');
+                        option.value = sens;
+                        option.text = sens;
+                        if (sens === media.sensitivity) {
+                            option.selected = true;
+                        }
+                        sensitivityDropdown.appendChild(option);
+                    });
+
+                    const partDropdown = document.createElement('select');
+                    partTitles.forEach(title => {
+                        const option = document.createElement('option');
+                        option.value = title;
+                        option.text = title;
+                        if (title === selectedPart) {
+                            option.selected = true;
+                        }
+                        partDropdown.appendChild(option);
+                    });
+
+                    const saveButton = document.createElement('span');
+                    saveButton.textContent = 'Save';
+                    saveButton.className = 'edit-button';
+                    saveButton.addEventListener('click', () => {
+                        media.sensitivity = sensitivityDropdown.value;
+                        media.currentPart = partDropdown.value;
+                        updateTrackedMedia(index, media);
+                    });
+
+                    li.innerHTML = `Blocking from `;
+                    li.appendChild(partDropdown);
+                    li.innerHTML += ` onwards [`;
+                    li.appendChild(saveButton);
+                    li.innerHTML += `]`;
+                    li.insertBefore(sensitivityDropdown, partDropdown);
+                });
+
                 trackedMediaList.appendChild(listItem);
             });
         });
     }
-});
 
-
-document.querySelectorAll('.collapsible h2').forEach(header => {
-    header.addEventListener('click', () => {
-        const content = header.nextElementSibling;
-        content.style.display = (content.style.display === 'none' || content.style.display === '') ? 'block' : 'none';
+    document.querySelectorAll('.collapsible h2').forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            content.style.display = (content.style.display === 'none' || content.style.display === '') ? 'block' : 'none';
+        });
     });
 });
