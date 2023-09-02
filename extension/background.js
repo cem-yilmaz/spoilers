@@ -2,20 +2,27 @@ console.log("Background.js running!");
 
 const serverURL = 'http://127.0.0.1:3000';
 
-function fetchMediaList() {
-    fetch(`${serverURL}/media`, {
+function fetchMediaList(query = '') {
+    return fetch(`${serverURL}/media?query=${query}`, {
         headers: {
             'Accept': 'application/json'
         }
     })
-    .then((response) => response.text()) // Change this line to get the response as text
-    .then((text) => {
-        // Log the response text to understand what is being returned
-        console.log('Response text:', text);
-    })
+    .then((response) => response.json())
     .catch((error) => {
         console.error('There was an error fetching the media:', error);
+        return [];
     });
 }
 
-fetchMediaList();
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log('Message received in background:', message); //DEBUG
+    if (message.action === 'searchMedia') {
+        fetchMediaList(message.query)
+        .then((data) => {
+            sendResponse(data);
+        });
+        // This line is necessary to make sendResponse work asynchronously
+        return true;
+    }
+});

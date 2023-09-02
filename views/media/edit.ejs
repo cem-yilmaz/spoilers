@@ -26,7 +26,10 @@
       </select>
     </div>
 
-    <!-- Add form fields for media parts -->
+    <div>
+      <label for="year">Year of Release:</label>
+      <input type="number" id="year" name="year" min="0" value="<%= media.year ? media.year : 0 %>">
+    </div>
 
     <div>
       <label for="hasParts">Does this media have parts?</label>
