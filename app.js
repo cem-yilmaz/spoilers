@@ -61,6 +61,8 @@ app.use('/urls', URLRoutes);
 }); */
 
 const mongoose = require('mongoose');
+const defaultConnection = 'mongodb://127.0.0.1:27017/spoilers_wiki';
+let db_connection = defaultConnection;
 
 mongoose.connect('mongodb://127.0.0.1:27017/spoilers_wiki', {
   useNewUrlParser: true,

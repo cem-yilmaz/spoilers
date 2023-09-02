@@ -106,9 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             mediaList.forEach((media, index) => {
                 const listItem = document.createElement('li');
+
+                // Extract part titles from media.parts
+                const partTitles = media.parts && media.parts.length > 0 ? media.parts.map(part => part.title) : "Entire Media";
+
                 listItem.innerHTML = `
                     ${getMediaEmoji(media.type)} <strong>${media.title}</strong> | ${media.year} | ${media.sensitivity}
-                    <ul><li>Blocking for ${media.parts && media.parts.length > 0 ? media.parts.join(', ') : 'Entire Media'} [Edit]</li></ul>
+                    <ul><li>Blocking for ${partTitles} [Edit]</li></ul>
                 `; // Assuming media has type, sensitivity, and status
                 const removeButton = document.createElement('button');
                 removeButton.textContent = 'Remove';

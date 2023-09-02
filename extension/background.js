@@ -1,6 +1,7 @@
 console.log("Background.js running!");
 
-const serverURL = 'http://127.0.0.1:3000';
+const defaultURL = 'http://127.0.0.1:3000'; // Master server URL 
+let serverURL = defaultURL; // Set default server URL
 
 function fetchMediaList(query = '') {
     return fetch(`${serverURL}/media?query=${query}`, {
