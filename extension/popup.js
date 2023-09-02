@@ -152,6 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error(`Edit button with id edit-${index} not found`);
                 }
             });
+            chrome.runtime.sendMessage({
+                action: 'fetchFilteredUrls',
+                trackedMedia: result.trackedMedia
+            });
         });
     }
     
