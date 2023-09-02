@@ -26,3 +26,7 @@ input[type="text"] {
 .media-item:hover {
     background-color: #2437db;
 }
+
+.edit-button, .save-button {
+    cursor: pointer;
+}

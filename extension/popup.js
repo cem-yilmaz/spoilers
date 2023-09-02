@@ -96,69 +96,62 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.storage.local.get(['trackedMedia'], (result) => {
             const mediaList = result.trackedMedia || [];
             trackedMediaList.innerHTML = '';
-
+    
             mediaList.forEach((media, index) => {
                 const listItem = document.createElement('li');
                 const partTitles = media.parts ? media.parts.map(part => part.title) : ['Entire Media'];
                 const selectedPart = media.currentPart || "Entire Media";
-                
+    
                 listItem.innerHTML = `
                     ${getMediaEmoji(media.type)} <strong>${media.title}</strong> | ${media.year} | ${media.sensitivity}
                     <ul><li id="info-${index}">Blocking from ${selectedPart} onwards [<span class="edit-button" id="edit-${index}">Edit</span>]</li></ul>
                 `;
-
+                trackedMediaList.appendChild(listItem);
+    
                 const removeButton = document.createElement('button');
                 removeButton.textContent = 'Remove';
                 removeButton.addEventListener('click', () => removeTrackedMedia(index));
                 listItem.appendChild(removeButton);
-
-                document.getElementById(`edit-${index}`).addEventListener('click', () => {
-                    const li = document.getElementById(`info-${index}`);
-                    const sensitivities = ['No Spoilers', 'Major Spoilers'];
-                    
-                    const sensitivityDropdown = document.createElement('select');
-                    sensitivities.forEach(sens => {
-                        const option = document.createElement('option');
-                        option.value = sens;
-                        option.text = sens;
-                        if (sens === media.sensitivity) {
-                            option.selected = true;
-                        }
-                        sensitivityDropdown.appendChild(option);
+    
+                const editButton = document.getElementById(`edit-${index}`);
+                if (editButton) {
+                    editButton.addEventListener('click', () => {
+                        const infoElement = document.getElementById(`info-${index}`);
+                        infoElement.innerHTML = `
+                            <select id="sensitivity-${index}">
+                                <option value="No Spoilers">No Spoilers</option>
+                                <option value="Story Beats/Mild Spoilers">Story Beats/Mild Spoilers</option>
+                                <option value="Major Spoilers">Major Spoilers</option>
+                            </select>
+                            Blocking from
+                            <select id="part-${index}">
+                                ${partTitles.map(title => `<option value="${title}">${title}</option>`).join('')}
+                            </select>
+                            onwards
+                            [<span class="save-button" id="save-${index}">Save</span>]
+                        `;
+                        
+                        document.getElementById(`sensitivity-${index}`).value = media.sensitivity;
+                        document.getElementById(`part-${index}`).value = selectedPart;
+                        
+                        const saveButton = document.getElementById(`save-${index}`);
+                        saveButton.addEventListener('click', () => {
+                            media.sensitivity = document.getElementById(`sensitivity-${index}`).value;
+                            media.currentPart = document.getElementById(`part-${index}`).value;
+                            
+                            // Save the updated media list
+                            chrome.storage.local.set({ trackedMedia: mediaList }, () => {
+                                displayTrackedMedia();
+                            });
+                        });
                     });
-
-                    const partDropdown = document.createElement('select');
-                    partTitles.forEach(title => {
-                        const option = document.createElement('option');
-                        option.value = title;
-                        option.text = title;
-                        if (title === selectedPart) {
-                            option.selected = true;
-                        }
-                        partDropdown.appendChild(option);
-                    });
-
-                    const saveButton = document.createElement('span');
-                    saveButton.textContent = 'Save';
-                    saveButton.className = 'edit-button';
-                    saveButton.addEventListener('click', () => {
-                        media.sensitivity = sensitivityDropdown.value;
-                        media.currentPart = partDropdown.value;
-                        updateTrackedMedia(index, media);
-                    });
-
-                    li.innerHTML = `Blocking from `;
-                    li.appendChild(partDropdown);
-                    li.innerHTML += ` onwards [`;
-                    li.appendChild(saveButton);
-                    li.innerHTML += `]`;
-                    li.insertBefore(sensitivityDropdown, partDropdown);
-                });
-
-                trackedMediaList.appendChild(listItem);
+                } else {
+                    console.error(`Edit button with id edit-${index} not found`);
+                }
             });
         });
     }
+    
 
     document.querySelectorAll('.collapsible h2').forEach(header => {
         header.addEventListener('click', () => {
