@@ -69,7 +69,7 @@ function fetchFilteredUrls(trackedMedia) {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('Message received in background:', message); //DEBUG
+    //console.log('Message received in background:', message); //DEBUG
     if (message.action === 'searchMedia') {
         fetchMediaList(message.query)
         .then((data) => {
@@ -80,5 +80,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     } else if (message.action === 'fetchFilteredUrls') {
         fetchFilteredUrls(message.trackedMedia);
         console.log("Global filtered URLs:", globalFilteredUrls);
+    } else if (message.action === 'getFilteredUrls') {
+        sendResponse(globalFilteredUrls);
     }
 });

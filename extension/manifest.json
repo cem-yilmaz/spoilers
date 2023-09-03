@@ -4,6 +4,12 @@
     "description": "Block spoilers on YouTube.",
     "version": "1.0",
     "permissions": ["activeTab", "storage"],
+    "content_scripts": [
+      {
+        "matches": ["*://www.youtube.com/*"],
+        "js": ["content-script.js"]
+      }
+    ],
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
