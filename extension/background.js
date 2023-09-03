@@ -2,6 +2,7 @@ console.log("Background.js running!");
 
 const defaultURL = 'http://127.0.0.1:3000'; // Master server URL 
 let serverURL = defaultURL; // Set default server URL
+let globalFilteredUrls = [];
 
 function fetchMediaList(query = '') {
     return fetch(`${serverURL}/media?query=${query}`, {
@@ -62,6 +63,7 @@ function fetchFilteredUrls(trackedMedia) {
             });
         });
         console.log("Filtered URLs:", filteredUrls);
+        globalFilteredUrls = filteredUrls;
     })
     .catch(error => console.error("Error fetching filtered URLs:", error));
 }
@@ -77,5 +79,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     } else if (message.action === 'fetchFilteredUrls') {
         fetchFilteredUrls(message.trackedMedia);
+        console.log("Global filtered URLs:", globalFilteredUrls);
     }
 });
