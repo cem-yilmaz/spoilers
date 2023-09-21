@@ -1,47 +1,41 @@
 console.log('content-script.js initialized!');
 
 function checkForSpoilers() {
-    // Array to store all video data
     let videoDataArray = [];
 
-    // Iterate through all videos on the page
-    const videoLinks = document.querySelectorAll("[data-context-item-id]");
+    // Universal selector to detect video items
+    const videoElements = document.querySelectorAll("ytd-video-renderer, ytd-rich-item-renderer, ytd-compact-video-renderer");
 
-    videoLinks.forEach((linkElement) => {
+    videoElements.forEach(videoElement => {
         let videoData = {};
 
-        // Extract URL
-        const videoId = linkElement.getAttribute("data-context-item-id");
-        videoData["VIDEO_URL"] = `https://youtube.com/watch?v=${videoId}`;
+        // Try to get video URL
+        let urlAnchor = videoElement.querySelector("a[id='thumbnail'], a[id='video-title-link']");
+        if (urlAnchor) {
+            let url = urlAnchor.getAttribute("href");
+            videoData["VIDEO_URL"] = url.startsWith("/watch?v=") ? `https://youtube.com${url}` : url;
+            
+            // Extract Thumbnail SRC
+            let thumbnailImg = videoElement.querySelector('img');
+            if (thumbnailImg) {
+                videoData["VIDEO_THUMBNAIL_SRC"] = thumbnailImg.src;
+                thumbnailImg.style.filter = 'blur(5px)';  // Apply the blur
+            }
 
-        // Extract Title
-        const titleElement = linkElement.querySelector("#video-title");
-        if (titleElement) {
-            videoData["VIDEO_TITLE"] = titleElement.textContent.trim();
-        }
+            // Extract Title
+            let titleElement = videoElement.querySelector("#video-title, #video-title yt-formatted-string");
+            if (titleElement) {
+                videoData["VIDEO_TITLE"] = titleElement.textContent.trim();
+                titleElement.textContent = "SponsorBlocked";  // Update the title
+            }
 
-        // Extract Thumbnail SRC
-        const thumbnailElement = linkElement.querySelector('img');
-        if (thumbnailElement) {
-            videoData["VIDEO_THUMBNAIL_SRC"] = thumbnailElement.src;
-        }
-
-        videoDataArray.push(videoData);
-
-        // Implement other manipulations here (like changing the title and blurring the thumbnail)
-        if (titleElement) {
-            titleElement.textContent = "SponsorBlocked";
-        }
-
-        if (thumbnailElement) {
-            thumbnailElement.style.filter = 'blur(5px)';
+            videoDataArray.push(videoData);
         }
     });
 
     console.log(videoDataArray);
 }
 
-// Run the check when the script is injected
 checkForSpoilers();
 
 // To handle YouTube's dynamic content loading
