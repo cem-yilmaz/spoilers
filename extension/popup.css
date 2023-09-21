@@ -30,3 +30,7 @@ input[type="text"] {
 .edit-button, .save-button {
     cursor: pointer;
 }
+
+body {
+    width: 220px;
+}
