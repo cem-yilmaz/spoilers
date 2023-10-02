@@ -1,4 +1,5 @@
 let allMedia = [];
+let isExtensionOn = true;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Load all media on page load
@@ -19,6 +20,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mediaSearchInput) {
         mediaSearchInput.addEventListener('input', searchMedia);
     }
+
+    const powerButton = document.getElementById('powerButton');
+    powerButton.addEventListener('click', toggleExtensionPower);
+    updatePowerButtonState();
+
+    function toggleExtensionPower() {
+        isExtensionOn = !isExtensionOn;
+        chrome.storage.local.set({ isExtensionOn: isExtensionOn }, updatePowerButtonState);
+    }
+
+    function updatePowerButtonState() {
+        chrome.storage.local.get(['isExtensionOn'], (result) => {
+            isExtensionOn = result.isExtensionOn !== undefined ? result.isExtensionOn : true; // Default to true
+            powerButton.textContent = isExtensionOn ? 'ON' : 'OFF';
+        }
+    )}
 
     function searchMedia() {
         const query = mediaSearchInput.value.trim();

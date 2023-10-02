@@ -1,49 +1,59 @@
 console.log('content-script.js initialized!');
 
 function checkForSpoilers() {
-    let videoDataArray = [];
+    // Check if the extension is turned ON
+    chrome.storage.local.get(['extensionState'], (result) => {
+        const isOn = result.extensionState !== false; // default to ON
+        if (isOn) {
+            chrome.runtime.sendMessage({ action: 'getFilteredUrls' }, (filteredUrls) => {
+                let videoDataArray = [];
 
-    // Universal selector to detect video items
-    const videoElements = document.querySelectorAll("ytd-video-renderer, ytd-rich-item-renderer, ytd-compact-video-renderer");
+                const videoElements = document.querySelectorAll("ytd-video-renderer, ytd-rich-item-renderer, ytd-compact-video-renderer");
+                videoElements.forEach(videoElement => {
+                    let videoData = {};
+                    
+                    let urlAnchor = videoElement.querySelector("a[id='thumbnail'], a[id='video-title-link']");
+                    if (urlAnchor) {
+                        let url = urlAnchor.getAttribute("href");
+                        videoData["VIDEO_URL"] = url.startsWith("/watch?v=") ? `https://youtube.com${url}` : url;
+                        
+                        if (filteredUrls.includes(videoData["VIDEO_URL"])) {
+                            console.debug("DEBUG: Blocking content for URL", videoData["VIDEO_URL"]);  // Print debug message
+                            
+                            let thumbnailImg = videoElement.querySelector('img');
+                            if (thumbnailImg) {
+                                videoData["VIDEO_THUMBNAIL_SRC"] = thumbnailImg.src;
+                                thumbnailImg.style.filter = 'blur(12px)';
+                            }
 
-    videoElements.forEach(videoElement => {
-        let videoData = {};
-
-        // Try to get video URL
-        let urlAnchor = videoElement.querySelector("a[id='thumbnail'], a[id='video-title-link']");
-        if (urlAnchor) {
-            let url = urlAnchor.getAttribute("href");
-            videoData["VIDEO_URL"] = url.startsWith("/watch?v=") ? `https://youtube.com${url}` : url;
-            
-            // Extract Thumbnail SRC
-            let thumbnailImg = videoElement.querySelector('img');
-            if (thumbnailImg) {
-                videoData["VIDEO_THUMBNAIL_SRC"] = thumbnailImg.src;
-                thumbnailImg.style.filter = 'blur(5px)';  // Apply the blur
-            }
-
-            // Extract Title
-            let titleElement = videoElement.querySelector("#video-title, #video-title yt-formatted-string");
-            if (titleElement) {
-                videoData["VIDEO_TITLE"] = titleElement.textContent.trim();
-                titleElement.textContent = "SponsorBlocked";  // Update the title
-            }
-
-            videoDataArray.push(videoData);
+                            let titleElement = videoElement.querySelector("#video-title, #video-title yt-formatted-string");
+                            let wordCount = titleElement.textContent.trim().split(" ").length;
+                            if (titleElement) {
+                                videoData["VIDEO_TITLE"] = titleElement.textContent.trim();
+                                titleElement.textContent = `SponsorBlocked| Original title: ${titleElement}`;
+                            }
+                        }
+                        videoDataArray.push(videoData);
+                    }
+                });
+                console.log(videoDataArray);
+            });
         }
     });
-
-    console.log(videoDataArray);
 }
-
 checkForSpoilers();
 
-// To handle YouTube's dynamic content loading
-const targetNode = document.getElementById('content');
-const config = { childList: true, subtree: true };
+chrome.runtime.sendMessage({ action: 'getFilteredUrls' }, (response) => {
+    const filteredUrls = response || [];
+    checkForSpoilers(filteredUrls);
 
-const observer = new MutationObserver(() => {
-    checkForSpoilers();
+    // To handle YouTube's dynamic content loading
+    const targetNode = document.getElementById('content');
+    const config = { childList: true, subtree: true };
+
+    const observer = new MutationObserver(() => {
+        checkForSpoilers(filteredUrls);
+    });
+
+    observer.observe(targetNode, config);
 });
-
-observer.observe(targetNode, config);
