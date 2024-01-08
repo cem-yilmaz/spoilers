@@ -57,7 +57,7 @@ function fetchFilteredUrls(trackedMedia) {
                     })
                     .then(response => response.json())
                     .then(urlDocument => {
-                        filteredUrls.push(urlDocument.url);
+                        filteredUrls.push(urlDocument.video_id);
                     });
                 }
             });
