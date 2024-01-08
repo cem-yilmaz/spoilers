@@ -116,7 +116,7 @@ describe('URLs', function() {
     // Test for the successful creation of a URL document
     it('should create a new URL document', function(done) {
         const urlData = {
-            video_id: 'https://www.testurl.com',
+            video_id: 'dQw4w9WgXcQ',
             media: mediaId,
             spoiler: spoilerId,
             description: 'Test URL'
@@ -151,7 +151,7 @@ describe('URLs', function() {
     // Test for editing a URL document
     it('should update an existing URL document', function(done) {
         const updatedData = {
-            video_id: 'https://www.updatedurl.com',
+            video_id: 'dQw4w9WgXCQ',
             media: mediaId,
             spoiler: spoilerId,
             description: 'Updated URL'
