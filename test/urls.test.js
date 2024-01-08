@@ -28,14 +28,12 @@ describe('URLs', function() {
             .set('Accept', 'application/json')
             .send(mediaData);
 
-        console.log("Media POST response:", res.body); //DEBUG
         mediaId = res.body._id;
 
         res = await chai.request(server)
             .get(`/media/${mediaId}`)
             .set('Accept', 'application/json');
 
-        console.log("Media GET response:", res.body); //DEBUG
         if (res.body.parts && res.body.parts.length > 0) {
             partId = res.body.parts[0]._id;
         } else {
@@ -54,7 +52,6 @@ describe('URLs', function() {
             .set('Accept', 'application/json')
             .send(spoilerData);
 
-        console.log("Spoiler POST response:", res.body); //DEBUG
         spoilerId = res.body._id;
 
         if (mediaId && partId && spoilerId) {
@@ -77,13 +74,13 @@ describe('URLs', function() {
           .end(function(err, res) {
             expect(res).to.have.status(400);
             expect(res.body).to.have.property('message', 'Validation failed');
-            expect(res.body.errors).to.have.property('url');
+            expect(res.body.errors).to.have.property('video_id');
             done();
           });
     });
     it('should fail to create a new URL document with invalid media ID', function(done) {
         const urlData = {
-          url: 'https://www.testurl.com',
+          video_id: 'https://www.testurl.com',
           media: 'invalid-media-id',
           spoiler: spoilerId,
           description: 'Test URL'
@@ -100,7 +97,7 @@ describe('URLs', function() {
     });
     it('should fail to create a new URL document with invalid spoiler ID', function(done) {
         const urlData = {
-            url: 'https://www.testurl.com',
+            video_id: 'https://www.testurl.com',
             media: mediaId,
             spoiler: 'invalid-spoiler-id',
             description: 'Test URL'
@@ -119,7 +116,7 @@ describe('URLs', function() {
     // Test for the successful creation of a URL document
     it('should create a new URL document', function(done) {
         const urlData = {
-            url: 'https://www.testurl.com',
+            video_id: 'https://www.testurl.com',
             media: mediaId,
             spoiler: spoilerId,
             description: 'Test URL'
@@ -154,7 +151,7 @@ describe('URLs', function() {
     // Test for editing a URL document
     it('should update an existing URL document', function(done) {
         const updatedData = {
-            url: 'https://www.updatedurl.com',
+            video_id: 'https://www.updatedurl.com',
             media: mediaId,
             spoiler: spoilerId,
             description: 'Updated URL'
@@ -172,7 +169,7 @@ describe('URLs', function() {
                     .get(`/urls/${urlId}`)
                     .set('Accept', 'application/json')
                     .end(function(err, res) {
-                        expect(res.body).to.have.property('url', updatedData.url);
+                        expect(res.body).to.have.property('video_id', updatedData.video_id);
                         expect(res.body).to.have.property('description', updatedData.description);
                         done();
                     });

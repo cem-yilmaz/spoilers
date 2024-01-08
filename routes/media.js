@@ -87,7 +87,7 @@ router.post('/', async (req, res) => {
     return res.status(409).json({ error: 'Media already exists' });
   }
   
-  console.log(newMedia); //DEBUG
+  //console.log(newMedia); //DEBUG
 
   try {
     const savedMedia = await newMedia.save();

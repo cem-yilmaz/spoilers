@@ -87,7 +87,7 @@ router.get('/media/:mediaId/parts', async (req, res) => {
 
 // Create a new spoiler
 router.post('/', async (req, res) => {
-  console.log("Spoiler POST Request body:", req.body); //DEBUG
+  //console.log("Spoiler POST Request body:", req.body); //DEBUG
   const partId = req.body.part && req.body.part.trim() !== '' ? req.body.part : null;
 
   // If mediaId is not in the database, return an error and status 400
@@ -108,7 +108,7 @@ router.post('/', async (req, res) => {
     part: partId
   });
 
-  console.log("New Spoiler:", newSpoiler); //DEBUG
+  //console.log("New Spoiler:", newSpoiler); //DEBUG
 
   // Validate the model
   const validationError = newSpoiler.validateSync();
@@ -126,7 +126,7 @@ router.post('/', async (req, res) => {
       { _id: req.body.mediaId },
       { $push: { spoilers: newSpoiler._id } }
     );
-    console.log("New Spoiler saved successfully:", newSpoiler); //DEBUG
+    //console.log("New Spoiler saved successfully:", newSpoiler); //DEBUG
     return res.status(200).json(newSpoiler);
   } catch (err) {
     console.log(err);
