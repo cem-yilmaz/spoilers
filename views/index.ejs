@@ -26,7 +26,7 @@
       </p>
       <% spoiler.urls.forEach((url, index, urlsArr) => { %>
         <p style="margin-left: 40px;">
-          <%= (index === urlsArr.length - 1) ? '└───' : '├───' %><a href="/urls/<%= url._id %>"><%= url.url %></a>
+          <%= (index === urlsArr.length - 1) ? '└───' : '├───' %><a href="/urls/<%= url._id %>">Spoiler Video ID: <code><%= url.video_id %></code></a>
         </p>
       <% }) %>
     <% }) %>

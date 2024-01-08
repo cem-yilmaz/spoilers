@@ -4,11 +4,11 @@
     <title>URLs</title>
 </head>
 <body>
-    <h1><%= url.url %></h1>
+    <h1><a href="https://www.youtube.com/watch?v=<%= url.video_id %>">Video ID: <%= url.video_id %></a></h1>
 
     <h2>Media: <%= url.media.title %></h2>
 
-    <h2>Spoiler: <%= url.spoiler.description %></h2>
+    <h2>Spoiler: <%= url.spoiler.reference %></h2>
 
     <h2>Description: <%= url.description || 'N/A' %></h2>
 
@@ -16,5 +16,7 @@
     <form action="/urls/<%= url._id %>?_method=DELETE" method="post">
         <button type="submit">Delete</button>
     </form>
+    <a href="/urls">Back to all URLs</a><br>
+    <a href="/">Back to home</a>
 </body>
 </html>

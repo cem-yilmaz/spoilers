@@ -5,8 +5,8 @@
 </head>
 <body>
     <form action="/urls/<%= url._id %>?_method=PUT" method="post">
-        <label for="url">URL</label>
-        <input type="text" id="url" name="url" value="<%= url.url %>" required>
+        <label for="video_id">Video ID</label>
+        <input type="text" id="video_id" name="video_id" value="<%= url.video_id %>" required>
       
         <label for="media">Media</label>
         <select id="media" name="media" required>

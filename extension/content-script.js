@@ -5,7 +5,9 @@ function checkForSpoilers() {
     chrome.storage.local.get(['extensionState'], (result) => {
         const isOn = result.extensionState !== false; // default to ON
         if (isOn) {
+            console.log("Extension is ON"); //DEBUG
             chrome.runtime.sendMessage({ action: 'getFilteredUrls' }, (filteredUrls) => {
+                console.log("Filtered URLs:", filteredUrls); //DEBUG
                 let videoDataArray = [];
 
                 const videoElements = document.querySelectorAll("ytd-video-renderer, ytd-rich-item-renderer, ytd-compact-video-renderer");
@@ -38,6 +40,8 @@ function checkForSpoilers() {
                 });
                 console.log(videoDataArray);
             });
+        } else {
+            console.log("Extension is OFF"); //DEBUG
         }
     });
 }
