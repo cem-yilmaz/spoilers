@@ -30,6 +30,44 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.storage.local.set({ isExtensionOn: isExtensionOn }, updatePowerButtonState);
     }
 
+    const debugButton = document.getElementById('debugPrintURLS');
+    debugButton.addEventListener('click', printFilteredUrls);
+
+    function printFilteredUrls() {
+        chrome.runtime.sendMessage({ action: 'getFilteredUrls' }, (filteredUrls) => {
+            const container = document.getElementById('filteredUrlsContainer');
+            container.innerHTML = ''; // Clear the container
+    
+            if (filteredUrls.length === 0) {
+                container.textContent = "No filtered URLs";
+                return;
+            }
+    
+            filteredUrls.forEach(url => {
+                const urlElement = document.createElement('p');
+                urlElement.textContent = url;
+                container.appendChild(urlElement);
+            });
+        });
+    }
+
+    const toggleAllVideosButton = document.getElementById('toggleAllVideosButton');
+
+    // Load the initial state of the button from storage
+    chrome.storage.local.get(['blockAllVideos'], (result) => {
+        toggleAllVideosButton.textContent = result.blockAllVideos ? 'Block Only Filtered Videos' : 'Block All Videos';
+    });
+
+    // Add event listener to toggle the state
+    toggleAllVideosButton.addEventListener('click', () => {
+        chrome.storage.local.get(['blockAllVideos'], (result) => {
+            const blockAllVideos = !result.blockAllVideos;
+            chrome.storage.local.set({ blockAllVideos: blockAllVideos }, () => {
+                toggleAllVideosButton.textContent = blockAllVideos ? 'Block Only Filtered Videos' : 'Block All Videos';
+            });
+        });
+    });
+
     function updatePowerButtonState() {
         chrome.storage.local.get(['isExtensionOn'], (result) => {
             isExtensionOn = result.isExtensionOn !== undefined ? result.isExtensionOn : true; // Default to true

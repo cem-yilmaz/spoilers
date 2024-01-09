@@ -37,6 +37,8 @@ function fetchFilteredUrls(trackedMedia) {
                     return;
                 }
                 // Current Part filter
+                // We only need to check this if the current part is not "Entire Media",
+                // because if it is, then we're adding all spoilers for this media anyways.
                 if (media.currentPart !== "Entire Media") {
                     const fromPartIndex = media.parts.findIndex(part => part.title === media.currentPart);
                     if (spoiler.part) {

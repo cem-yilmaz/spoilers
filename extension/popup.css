@@ -34,3 +34,13 @@ input[type="text"] {
 body {
     width: 220px;
 }
+
+#filteredUrlsContainer {
+    border: 1px solid #000; /* Black border */
+    padding: 10px; /* Some padding */
+    margin-top: 10px; /* Some margin at the top */
+    overflow: auto; /* Add a scrollbar if the content is too large */
+    max-height: 200px; /* Maximum height */
+    border-radius: 5px; /* Add rounded corners */
+    text-align: center;
+}
