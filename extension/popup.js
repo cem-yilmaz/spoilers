@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function printFilteredUrls() {
         chrome.runtime.sendMessage({ action: 'getFilteredUrls' }, (filteredUrls) => {
             const container = document.getElementById('filteredUrlsContainer');
-            container.innerHTML = ''; // Clear the container
+            container.innerHTML = '';
     
             if (filteredUrls.length === 0) {
                 container.textContent = "No filtered URLs";
@@ -74,6 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
             powerButton.textContent = isExtensionOn ? 'ON' : 'OFF';
         }
     )}
+
+    rerunCheckForSpoilersButton = document.getElementById('rerunCheckForSpoilersButton');
+    rerunCheckForSpoilersButton.addEventListener('click', () => {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id, {action: 'rerunCheckForSpoilers'});
+        });
+    });
 
     function searchMedia() {
         const query = mediaSearchInput.value.trim();

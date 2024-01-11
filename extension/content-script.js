@@ -19,28 +19,32 @@ function checkForSpoilers() {
                         videoData["VIDEO_URL"] = url.startsWith("/watch?v=") ? `https://youtube.com${url}` : url;
                         
                         let videoId = new URL(videoData["VIDEO_URL"]).searchParams.get("v");
+                        videoData["VIDEO_ID"] = videoId;
                         if (filteredUrls.includes(videoId) || blockAllVideos) {
-                            console.debug("DEBUG: Blocking content for URL", videoData["VIDEO_URL"]);  // Print debug message
+                            //console.debug("DEBUG: Blocking content for URL", videoData["VIDEO_URL"]);  // Print debug message
                             
                             let thumbnailImg = videoElement.querySelector('img');
                             if (thumbnailImg) {
                                 videoData["VIDEO_THUMBNAIL_SRC"] = thumbnailImg.src;
-                                thumbnailImg.style.filter = 'blur(12px)';
+                                thumbnailImg.style.filter = 'blur(14px)';
                             }
 
-                            let titleElement = videoElement.querySelector("#video-title, #video-title yt-formatted-string");
+                            let titleElement = videoElement.querySelector("#video-title yt-formatted-string, #video-title-link yt-formatted-string, #video-title, #video-title-link, #title"); // This is admittedly quite bad
                             if (titleElement) {
-                                videoData["VIDEO_TITLE"] = titleElement.textContent.trim();
-                                let wordCount = titleElement.textContent.trim().split(" ").length;
-                                if (!titleElement.textContent.startsWith('SponsorBlocked')) {
-                                    titleElement.textContent = `SponsorBlocked | Words: ${wordCount}`;
+                                console.debug("Title: ", titleElement.textContent);  // Print debug message
+                                originalTitle = titleElement.textContent.trim();
+                                videoData["VIDEO_TITLE"] = originalTitle
+                                replacementText = blockAllVideos ? originalTitle : spoilerFromID(videoId);
+                                // Check to see if the title has already been modified
+                                if (!originalTitle.startsWith("SpoilerBlocked | ")) {
+                                    titleElement.textContent = `SpoilerBlocked | ${replacementText}`;
                                 }
                             }
                         }
                         videoDataArray.push(videoData);
                     }
                 });
-                console.log(videoDataArray);
+                //console.log(videoDataArray);
             });
         } else {
             console.log("Extension is OFF"); //DEBUG
@@ -49,11 +53,21 @@ function checkForSpoilers() {
 }
 checkForSpoilers();
 
+function spoilerFromID(video_id) {
+    return "Spoiler from ID";
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'rerunCheckForSpoilers') {
+        console.log("Received rerunCheckForSpoilers message");
+        checkForSpoilers();
+    }
+});
+
 chrome.runtime.sendMessage({ action: 'getFilteredUrls' }, (response) => {
     const filteredUrls = response || [];
     checkForSpoilers(filteredUrls);
 
-    // To handle YouTube's dynamic content loading
     const targetNode = document.getElementById('content');
     const config = { childList: true, subtree: true };
 
@@ -62,7 +76,7 @@ chrome.runtime.sendMessage({ action: 'getFilteredUrls' }, (response) => {
             const filteredUrls = response || [];
             checkForSpoilers(filteredUrls);
         });
-    });
+    }); // This will need to be changed to a more efficient method later
 
     observer.observe(targetNode, config);
 });
