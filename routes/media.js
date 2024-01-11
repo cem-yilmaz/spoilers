@@ -44,7 +44,6 @@ router.get('/:id/edit', async (req, res) => {
   }
 });
 
-
 router.get('/:id', async (req, res) => {
   try {
     const mediaItem = await Media.findById(req.params.id);
@@ -58,7 +57,6 @@ router.get('/:id', async (req, res) => {
     return res.status(500).json(err);
   }
 });
-
 
 router.post('/', async (req, res) => {
   // Validate the type field

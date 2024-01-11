@@ -405,6 +405,46 @@ describe('Spoilers', function() {
             });
     });
 
+    // Testing the new cascade delete functionality
+    it('should cascade delete all associated urls when deleting a spoiler document', async function() {
+        const spoilerData = {
+            title: 'Test Spoiler with part attached',
+            intensity: 'No Spoilers',
+            reference: 'Test Reference',
+            mediaId: mediaId,
+            part: partId
+        };
+
+        const res = await chai.request(server)
+            .post('/spoilers')
+            .set('Accept', 'application/json')
+            .send(spoilerData);
+
+        const spoilerId = res.body._id;
+
+        const urlData = {
+            video_id: 'LvDBFMN3E6k',
+            mediaId: mediaId,
+            spoiler: spoilerId,
+            description: 'Test URL'
+        };
+
+        await chai.request(server)
+            .post('/urls')
+            .set('Accept', 'application/json')
+            .send(urlData);
+
+        await chai.request(server)
+            .delete(`/spoilers/${spoilerId}`)
+            .set('Accept', 'application/json');
+
+        const res2 = await chai.request(server)
+            .get(`/urls/${mediaId}/${partId}/${spoilerId}`)
+            .set('Accept', 'application/json');
+
+        expect(res2).to.have.status(404);
+    });
+
     // Still necessary to delete the media document created for these tests
 
     after(async function() {
