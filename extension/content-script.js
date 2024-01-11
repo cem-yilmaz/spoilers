@@ -29,7 +29,7 @@ function checkForSpoilers() {
                                 thumbnailImg.style.filter = 'blur(14px)';
                             }
 
-                            let titleElement = videoElement.querySelector("#video-title yt-formatted-string, #video-title-link yt-formatted-string, #video-title, #video-title-link, #title"); // This is admittedly quite bad
+                            let titleElement = videoElement.querySelector("#video-title, #video-title yt-formatted-string, #video-title-link yt-formatted-string, #video-title-link, #title"); // This is admittedly quite bad
                             if (titleElement) {
                                 console.debug("Title: ", titleElement.textContent);  // Print debug message
                                 originalTitle = titleElement.textContent.trim();
