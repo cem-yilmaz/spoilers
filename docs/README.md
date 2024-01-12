@@ -1,0 +1,3 @@
+This folder contains additional information that would not fit into the three page limit of the portfolio document. These will often be in the form of **Markdown** documents, and have been *optimised to be viewed correctly on GitHub in browser* as it should (hopefully) be platform agnostic.
+
+The information has been sorted into the most relevant Learning Objective. Both these files and the portfolio document itself may reference other additional files - both inside and outside of `docs/`.
