@@ -4,9 +4,6 @@ const mongoose = require('mongoose');
 const server = require('../app');
 const expect = chai.expect;
 
-const Spoiler = require('../models/spoiler');
-const spoiler = require('../models/spoiler');
-
 chai.use(chaiHttp);
 
 describe('Media', function() {
