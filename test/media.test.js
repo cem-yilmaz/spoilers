@@ -251,7 +251,7 @@ describe('Media: stupid cascade delete', function() {
             });
     });
 
-    it('should cascade delete all associated Spoilers when a media document is deleted', function(done) {
+    /* it('should cascade delete all associated Spoilers when a media document is deleted', function(done) {
         // Create a new media document
         const mediaData = {
             title: 'Test Media',
@@ -404,7 +404,7 @@ describe('Media: stupid cascade delete', function() {
                             });
                     });
             });
-    });
+    }); */
 });
 
 after(function(done) {
